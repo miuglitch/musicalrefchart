@@ -97,6 +97,9 @@ body{color:var(--fg);font-family:var(--font);font-size:17px;font-feature-setting
 .pbtn,.tog,.vbtn,.mbtn{font-family:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:6px;cursor:pointer;text-align:left;transition:background .1s,color .1s}
 .pbtn{background:var(--orange);color:#fff;border:1px solid var(--orange);letter-spacing:.08em}
 .pbtn:hover{background:#ff7240}
+/* dark mode: outlined like the other strip buttons on the black display */
+html[data-theme="dark"] .pbtn{background:transparent;color:#ff7a45;border-color:#ff7a45}
+html[data-theme="dark"] .pbtn:hover{background:#ff7a45;color:#0d0d0d}
 .mbtn{background:#2a2a2a;color:#d6d6d3;border:1px solid #2a2a2a}
 .mbtn:hover{background:var(--frame)}
 
@@ -564,10 +567,18 @@ function printSummary(){
   const sn=songName(), BPM=bpm(), SR=sr(), A4=a4(), kl=keyLabel();
   const beat=60000/BPM;
   const FONT="'IDM','Inter Display','Inter',system-ui,'Segoe UI',Helvetica,Arial,sans-serif";
-  // mirrors the light-theme :root tokens (the summary is always light, for printing)
-  const C={bg:'#dad8d3',bg1:'#c9c7c2',ln:'#b3b1ac',ln2:'#141414',t0:'#141414',t1:'#5c5b58',t2:'#8a8984',
-           freq:'#2364ad',cycl:'#0b6f78',wave:'#d8460f',samp:'#c0261f',ms:'#d8460f',lfo:'#2364ad',
-           dot:'#0b6f78',tri:'#d8460f',sharp:'#2a6fc0',bandA:'#e3e1dc'};
+  // The image follows the current theme. These mirror the :root (light) and
+  // html[data-theme="dark"] tokens; change them together.
+  const DARK=document.documentElement.dataset.theme==='dark';
+  const C=DARK
+    ?{bg:'#0d0d0d',bg1:'#1b1b1b',ln:'#3b3b3b',ln2:'#3b3b3b',t0:'#ffffff',t1:'#9a9a96',t2:'#5c5c58',
+      freq:'#62a6ee',cycl:'#20b9c4',wave:'#ff7a45',samp:'#ff5a52',ms:'#ff7a45',lfo:'#62a6ee',
+      dot:'#20b9c4',tri:'#ff7a45',sharp:'#5aa2ea',bandA:'#121212',row:'#1e1e1e',
+      tones:['#ff7a45','#20b9c4','#62a6ee','#ff5a52']}
+    :{bg:'#dad8d3',bg1:'#c9c7c2',ln:'#b3b1ac',ln2:'#141414',t0:'#141414',t1:'#5c5b58',t2:'#8a8984',
+      freq:'#2364ad',cycl:'#0b6f78',wave:'#d8460f',samp:'#c0261f',ms:'#d8460f',lfo:'#2364ad',
+      dot:'#0b6f78',tri:'#d8460f',sharp:'#2a6fc0',bandA:'#e3e1dc',row:'rgba(0,0,0,.08)',
+      tones:TONE_COLORS};
 
   // tempo rows
   const tRows=DIVS.filter(divOn).map(d=>{
@@ -590,7 +601,7 @@ function printSummary(){
     const tones=chordTones(document.getElementById('keymode').value);
     tones.forEach((iv,i)=>{
       if(iv===null)return;
-      pRows.push({section:`${TONE_LABELS[i]} — ${NN[(root+iv)%12]}  (${INAMES[iv]||'+'+iv+' semitones'})`,color:TONE_COLORS[i]});
+      pRows.push({section:`${TONE_LABELS[i]} — ${NN[(root+iv)%12]}  (${INAMES[iv]||'+'+iv+' semitones'})`,color:C.tones[i]});
       for(let oct=1;oct<=5;oct++){const m=(oct+1)*12+root+iv;if(m>=0&&m<=127)pRows.push(noteRow(m));}
     });
   }else{
@@ -653,7 +664,7 @@ function printSummary(){
         else x.fillText(t,cx+10,y+RH/2);
         cx+=cols[i].w;
       });
-      line(X,y+RH-.5,X+tw,y+RH-.5,'rgba(0,0,0,.08)');
+      line(X,y+RH-.5,X+tw,y+RH-.5,C.row);
       y+=RH;
     });
   }

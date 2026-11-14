@@ -26,7 +26,8 @@ the code map and the known gotchas.
    and `#body`. Don't reintroduce a max-width. In the Both and Pitch views the tables
    are `width:auto` (compact on purpose).
 6. **The summary is a canvas-drawn .jpg download**, not a popup. Its colours are a
-   copy of the light-theme `:root` tokens inside `printSummary()`; change both together.
+   copy of the light and dark theme tokens inside `printSummary()` (it follows the
+   current theme); change both together.
 7. **Scales live in `SCALE_LIST` only.** The Key mode menu is built from it, so
    don't add `<option>`s by hand. Chord tones are derived by `chordTones()`.
 8. **Two themes.** Body colours come from tokens on `:root`, overridden under

@@ -200,8 +200,8 @@ Layout:
 - **Footer** — generation timestamp
 
 Canvas can't read the page stylesheet, so colours live in a small `C` palette object
-inside `printSummary()` that mirrors the **light-theme** `:root` tokens (the image is
-always light, whatever the page theme). It draws in the embedded Inter Display; the
+inside `printSummary()` that mirrors the `:root` tokens: a light set and a dark set, picked from the page's
+current theme, so dark mode gives a dark image and light mode a light one. It draws in the embedded Inter Display; the
 click handler waits on `document.fonts.load()` first so the canvas doesn't fall back. Canvas height is computed
 from the row count, so the no-key image is tall (~2600 px logical).
 
