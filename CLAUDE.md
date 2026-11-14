@@ -17,11 +17,16 @@ the code map and the known gotchas.
 1. **Octave banding must target `td`, not `tr`.** With `border-collapse: collapse`
    a `<tr>` background doesn't paint through cells. It will silently render as
    nothing.
-2. **Markup is duplicated across views.** The dotted/triplet toggle row exists
-   twice, and both tables have two tbodies (`#tb`/`#tbb`, `#pb`/`#pbb`). Change
+2. **Markup is duplicated across views.** The Root/Dotted/Triplets toggle row
+   exists twice, and both tables have two tbodies (`#tb`/`#tbb`, `#pb`/`#pbb`). Change
    one, change the other.
 3. **Every displayed number goes through `f2`/`f3`/`f4`.** Never print a raw float.
 4. The Both view is the default tab, not Pitch.
+5. **Layout is 80% of the window width** (10% gutter each side) for both the header
+   and `#body`. Tables are `width:100%` so they meet the scrollbar; don't reintroduce
+   a max-width.
+6. **The summary is a canvas-drawn .jpg download**, not a popup. Its colours are a
+   copy of the `:root` palette inside `printSummary()`; change both together.
 
 ## Style
 

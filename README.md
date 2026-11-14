@@ -1,8 +1,8 @@
 # Musical Reference Chart
 
 A single-file, offline-capable web app for music production reference: pitch/frequency
-tables and tempo-division delay times, filtered by song key, with a printable per-song
-summary sheet.
+tables and tempo-division delay times, filtered by song key, with a per-song summary
+sheet saved as a .jpg image.
 
 Inspired by the iOS app **Tempo** (by Frozen Ape).
 
@@ -17,7 +17,7 @@ Inspired by the iOS app **Tempo** (by Frozen Ape).
 | **Dependencies** | None. No frameworks, no CDN, no fonts fetched. Pure HTML/CSS/JS |
 | **Runs offline** | Yes — open the file directly in any browser (`file://` works) |
 | **Browser target** | Modern desktop Chrome/Edge/Firefox. Not optimised for mobile |
-| **Lines** | ~607 |
+| **Lines** | ~640 |
 | **Author** | Magnus (Type 2 Studio) |
 
 **Design intent:** a dark, dense, monospace "instrument panel" aesthetic — information
@@ -46,11 +46,15 @@ For the hosted version, see §9.
 | Tuning ref | `#a4` | `440` | A4 in Hz. Drives all pitch calculations |
 | Key root | `#keyroot` | `""` (All) | `""` or semitone `0`–`11` |
 | Key mode | `#keymode` | `maj` | See scale list below |
-| PRINT SUMMARY | `#printBtn` | — | Opens summary in new window (§5) |
+| PRINT SUMMARY | `#printBtn` | — | Downloads the summary as a .jpg (§5) |
 | View tabs | `.tbtn` | `both` | `pitch` / `tempo` / `both` |
 
-Header bar spans full width; inner content is capped at `1400px` and centred
-(`.hd-inner` + `#body` both use that max-width).
+Header bar spans full width. Its inner content (`.hd-inner`) and the table area
+(`#body`) both fill **80% of the window width, with a 10% gutter each side**. There
+is no max-width cap. Font sizes and paddings were scaled up ~25% so the page reads
+comfortably at 100% browser zoom. Tables are `width:100%`, so they run right up to
+the scrollbar with no empty strip (the Both view's narrow tempo column is the one
+exception, `.cwrap-t table{width:auto}`).
 
 ### Pitch table
 
@@ -59,25 +63,26 @@ All 128 MIDI notes (C-1 to G9), filtered to the selected key if one is set.
 | Column | Value |
 |---|---|
 | Note | Name + space + octave number, e.g. `C# 4`. Both full-size, white (sharps are blue) |
-| MIDI | 0–127 |
 | Frequency | Hz, 3 decimals |
 | Cycle length | ms, 3 decimals — one full waveform period |
 | Wavelength | metres, 3 decimals — at 343.2 m/s (air, 20 °C) |
 | Samples | Samples per cycle at the given sample rate. `N/A` if SR blank |
-| LFO / audio rate | Same Hz value, badged `LFO` if < 20 Hz, else `OSC` |
+
+The MIDI-number and LFO/OSC columns were removed (Nov 2026).
 
 Row highlights: A4 (teal) and C4 (blue) get badges and a brighter background.
 
 ### Tempo table
 
 21 divisions: `1/1` … `1/64`, each in straight, dotted (`D`) and triplet (`T`) form.
-Two toggle buttons above the table show/hide dotted and triplet rows.
+Three toggle buttons above the table — **Root**, **Dotted**, **Triplets** — show/hide
+the straight, dotted and triplet rows independently. All three start on.
 
 | Column | Value |
 |---|---|
 | Division | e.g. `1/8D`. Colour-coded: white = straight, teal = dotted, orange = triplet |
-| Delay (ms) | 2 decimals |
-| Delay (s) | 4 decimals *(full Tempo tab only)* |
+| Length (ms) | 2 decimals. Headed `Length ms` in the Both view |
+| Length (s) | 4 decimals *(full Tempo tab only)* |
 | LFO rate | Hz, 4 decimals — the rate that completes one cycle per division |
 
 ### Views
@@ -135,31 +140,30 @@ lyd  [0,4,7,11]    mix  [0,4,7,10]    pmaj [0,4,7,null]  pmin [0,3,7,10]
 
 ---
 
-## 5. Print summary
+## 5. Print summary (.jpg)
 
-Clicking **PRINT SUMMARY** builds an HTML string and opens it via
-`window.open()` + `document.write()` — a standalone window with no dependency on
-the parent page. Designed to be screenshotted and saved alongside the project file.
+Clicking **PRINT SUMMARY** draws the summary onto an off-screen `<canvas>` (at 2×
+for sharpness) and downloads it as a JPEG named `<song name> - summary.jpg`. No
+popup window, no library: it's plain Canvas 2D + `canvas.toBlob('image/jpeg')` and a
+temporary `<a download>` link, so it works offline and from `file://`.
 
 Layout:
 
-- **Title** — song name, with ♪ glyph
-- **Meta line** — key, BPM, sample rate, A4 tuning, plus notes if dotted/triplets
-  are hidden
-- **Left column** — tempo divisions (ms / seconds / LFO Hz), respecting the
-  dotted/triplet toggles
+- **Title** — song name, with 𝄞 glyph
+- **Meta line** — key, BPM, sample rate, A4 tuning, plus notes if root/dotted/
+  triplet rows are hidden
+- **Left column** — tempo divisions (Length ms / seconds / LFO Hz), respecting the
+  Root/Dotted/Triplets toggles
 - **Right column** — depends on whether a key is selected:
   - **Key selected** → chord tones. Four labelled sections (Root / Third / Fifth /
-    Seventh), each listing that tone across **octaves 1–5**, with full columns
-    (Note, MIDI, Freq, Cycle, λ, Samples)
+    Seventh), each listing that tone across **octaves 1–5** (Note, Freq, Cycle,
+    Wavelength, Samples)
   - **No key** → flat list of all notes C0–C8
 - **Footer** — generation timestamp
 
-Styles are inlined into the generated document because it has no access to the
-parent stylesheet.
-
-> **Popup blockers** will silently stop this. If the button appears to do nothing,
-> that's the cause.
+Canvas can't read the page stylesheet, so colours live in a small `C` palette object
+inside `printSummary()` that mirrors the `:root` variables. Canvas height is computed
+from the row count, so the no-key image is tall (~2600 px logical).
 
 ---
 
@@ -182,7 +186,7 @@ Column accent colours — each has a `d` (dark) variant used for header underlin
 --c1 #9080ff  lavender  cycle length
 --c2 #ffaa33  amber     wavelength
 --c3 #33ee88  green     samples
---c4 #ff5599  pink      LFO
+--c4 #ff5599  pink      LFO Hz (tempo)
 --c5 #5599ff  blue      sharp note names
 --c6 #ff8833  orange    triplet divisions
 ```
@@ -229,12 +233,13 @@ Single file, three blocks: `<style>`, markup, `<script>`.
 | `tempoHTML(bpm, compact)` | Builds tempo rows. `compact` drops the seconds column (Both view) |
 | `updateSRLabel(sr)` | Updates the "@ 96,000 Hz" subtitle in the Samples header |
 | `refresh()` | Master redraw — reads inputs, repaints only the active tab |
-| `syncTogs()` | Keeps the duplicated dotted/triplet buttons in sync across views |
-| `printSummary()` | Builds and opens the summary window |
+| `syncTogs()` | Keeps the duplicated Root/Dotted/Triplets buttons in sync across views |
+| `divOn(d)` | `true` if a DIVS entry's type is currently shown (shared by tables and summary) |
+| `printSummary()` | Draws the summary on a canvas and downloads it as .jpg |
 
 ### State
 
-Module-scope globals: `showDot`, `showTri` (booleans, both `true`).
+Module-scope globals: `showRoot`, `showDot`, `showTri` (booleans, all `true`).
 Everything else is read live from the DOM inputs on each `refresh()`.
 
 ### Event wiring
@@ -248,7 +253,7 @@ Everything else is read live from the DOM inputs on each `refresh()`.
 
 ### Duplicated markup — important
 
-The dotted/triplet toggle row exists **twice** (once in the Tempo pane, once in the
+The Root/Dotted/Triplets toggle row exists **twice** (once in the Tempo pane, once in the
 Both pane's left column), and the tempo and pitch tables each have **two tbodies**
 (`#tb`/`#tbb`, `#pb`/`#pbb`). Any change to one must be mirrored. This is the main
 source of "I fixed it but it's still broken in the other tab" confusion.
@@ -313,7 +318,7 @@ ignore flag before the first sync.
 - Enharmonic display — show flats (Bb, Eb) rather than sharps when the key calls
   for it. Currently sharp-only throughout.
 - More scales — harmonic minor, melodic minor, locrian, blues.
-- Selectable octave range for the print summary (currently hardcoded 1–5 for chord
+- Selectable octave range for the summary image (currently hardcoded 1–5 for chord
   tones, C0–C8 for the no-key list).
 - Save/load song presets to `localStorage`.
 - Reverb/pre-delay helper derived from the tempo grid.
@@ -333,6 +338,6 @@ Things worth saying up front so the assistant doesn't get them wrong:
 
 1. **One file, no build, no dependencies, must work offline.** Don't suggest React,
    a bundler, or a CDN.
-2. **Mirror duplicated markup** — two toggle rows, two tbody pairs (§7).
+2. **Mirror duplicated markup** — two Root/Dotted/Triplets toggle rows, two tbody pairs (§7).
 3. **Octave banding goes on `td`, never `tr`** (§6).
 4. Keep the dense dark instrument-panel aesthetic.
