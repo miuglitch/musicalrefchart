@@ -1,0 +1,21 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+*~
+
+# Dropbox
+.dropbox
+.dropbox.attr
+*.sb-*
+
+# Editors
+.vscode/
+.idea/
+
+# Scratch — anything in here stays local
+scratch/
+*.bak
+
+# Old Claude drafts, kept local only
+Claude outputs/

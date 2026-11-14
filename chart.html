@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Reference Chart</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#06090f; --bg1:#0c1121; --bg2:#111829; --bg3:#18203a;
+  --ln:#1c2640; --ln2:#273555;
+  --t0:#d6e4ff; --t1:#5f78b0; --t2:#2b3a60; --t3:#14203a;
+  --c0:#00d4b0; --c0d:#005040;
+  --c1:#9080ff; --c1d:#2a2060;
+  --c2:#ffaa33; --c2d:#5a3a00;
+  --c3:#33ee88; --c3d:#0a4022;
+  --c4:#ff5599; --c4d:#5a1030;
+  --c5:#5599ff; --c5d:#1a3060;
+  --c6:#ff8833;
+}
+
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{color:var(--t0);font-family:'Cascadia Code','JetBrains Mono','SF Mono','Fira Code','Consolas',monospace;font-size:12px}
+
+/* ── HEADER ── */
+.hd{position:fixed;top:0;left:0;right:0;z-index:200;height:62px;background:var(--bg1);border-bottom:1px solid var(--ln2)}
+.hd::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--c0) 0%,var(--c1) 40%,var(--c4) 75%,transparent 100%);opacity:.5}
+.hd-inner{max-width:1400px;width:100%;height:100%;margin:0 auto;padding:0 14px;display:flex;align-items:center;gap:0}
+
+.logo{display:flex;align-items:center;gap:8px;padding-right:14px;border-right:1px solid var(--ln);margin-right:0;height:100%;flex-shrink:0}
+.logo-sym{font-size:22px;color:var(--c0);line-height:1}
+.logo-lbl{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--t0)}
+.logo-sub{font-size:8px;color:var(--t2);letter-spacing:.05em;margin-top:1px}
+
+.iblk{display:flex;flex-direction:column;gap:2px;padding:0 12px;border-right:1px solid var(--ln);flex-shrink:0}
+.iblk-lbl{font-size:8px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--t2)}
+.irow{display:flex;align-items:center;gap:5px}
+
+.inp{background:var(--bg3);border:1px solid var(--ln);border-radius:3px;
+  color:var(--c0);font-family:inherit;font-size:16px;font-weight:700;
+  padding:2px 7px;width:80px;text-align:right;outline:none;
+  transition:border-color .15s,box-shadow .15s;caret-color:var(--c0);-moz-appearance:textfield}
+.inp::-webkit-inner-spin-button,.inp::-webkit-outer-spin-button{-webkit-appearance:none}
+.inp:focus{border-color:var(--c0d);box-shadow:0 0 0 2px rgba(0,212,176,.1)}
+.inp::placeholder{color:var(--t3);font-size:11px;font-weight:400}
+
+.inp-song{background:var(--bg3);border:1px solid var(--ln);border-radius:3px;
+  color:var(--t0);font-family:inherit;font-size:13px;font-weight:600;
+  padding:3px 8px;width:150px;text-align:left;outline:none;
+  transition:border-color .15s;caret-color:var(--t0)}
+.inp-song:focus{border-color:var(--ln2);box-shadow:0 0 0 2px rgba(214,228,255,.05)}
+.inp-song::placeholder{color:var(--t3);font-weight:400;font-size:11px}
+
+.sel{background:var(--bg3);border:1px solid var(--ln);border-radius:3px;
+  color:var(--c1);font-family:inherit;font-size:12px;font-weight:700;
+  padding:3px 20px 3px 7px;outline:none;cursor:pointer;transition:border-color .15s;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%232b3a60'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center}
+.sel:focus{border-color:var(--c1d)}
+.sel-key{width:72px}
+.sel-mode{width:92px}
+
+.iunit{font-size:9px;color:var(--t1);font-weight:600;letter-spacing:.1em}
+
+.hd-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.pbtn{background:rgba(255,85,153,.1);border:1px solid rgba(255,85,153,.3);border-radius:3px;
+  color:var(--c4);cursor:pointer;font-family:inherit;font-size:9px;font-weight:700;
+  letter-spacing:.18em;padding:5px 12px;text-transform:uppercase;transition:all .15s}
+.pbtn:hover{background:rgba(255,85,153,.2);border-color:var(--c4);color:#fff}
+.tabs{display:flex;gap:4px}
+.tbtn{background:none;border:1px solid var(--ln);border-radius:3px;
+  color:var(--t1);cursor:pointer;font-family:inherit;font-size:10px;
+  font-weight:700;letter-spacing:.15em;padding:5px 11px;text-transform:uppercase;
+  transition:all .1s;position:relative}
+.tbtn:hover{color:var(--t0);border-color:var(--ln2)}
+.tbtn.on{background:var(--bg3);border-color:var(--c0d);color:var(--c0)}
+.tbtn.on::before{content:'';position:absolute;top:-1px;left:12%;right:12%;height:2px;
+  background:var(--c0);border-radius:0 0 2px 2px}
+
+/* ── BODY ── */
+#body{position:fixed;top:62px;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:1400px;overflow:hidden;display:flex}
+.pane{display:none;width:100%;height:100%;overflow:auto}
+.pane.on{display:flex}
+#pane-both{display:none;width:100%;height:100%;overflow:hidden}
+#pane-both.on{display:flex}
+.cwrap{height:100%;overflow-y:auto;overflow-x:auto}
+.cwrap-t{flex-shrink:0;border-right:1px solid var(--ln2)}
+.cwrap-p{flex:1;min-width:0}
+
+/* ── TABLE BASE ── */
+table{border-collapse:collapse}
+thead th{position:sticky;top:0;z-index:10;background:var(--bg2);border-bottom:2px solid var(--ln2);
+  padding:9px 13px 7px;text-align:left;white-space:nowrap;user-select:none}
+.thm{display:block;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#dce8ff}
+.ths{display:block;font-size:8px;margin-top:2px;font-weight:400;letter-spacing:.05em;color:rgba(220,232,255,.45)}
+tbody tr{border-bottom:1px solid rgba(28,38,64,.7);transition:background .07s}
+tbody tr:hover td{background:rgba(255,255,255,.03)!important}
+tbody td{padding:4px 13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ── OCTAVE BANDING ── */
+tr.oct0 td{background:rgba(0,212,176,.15)}
+tr.oct1 td{background:rgba(144,128,255,.15)}
+tr.oct2 td{background:rgba(255,170,51,.12)}
+tr.oct3 td{background:rgba(255,85,153,.11)}
+
+/* special row highlights */
+tr.ra4 td{background:rgba(0,212,176,.1)!important}
+tr.rc4 td{background:rgba(85,153,255,.08)!important}
+tr.rco{border-top:1px solid var(--ln2)!important}
+
+/* column headers — border accents only, text inherits white from .thm */
+.th-note{text-align:center} .td-note{text-align:center}
+.th-freq{border-bottom:2px solid var(--c0d)!important}
+.th-cycl{border-bottom:2px solid var(--c1d)!important}
+.th-wave{border-bottom:2px solid var(--c2d)!important}
+.th-samp{border-bottom:2px solid var(--c3d)!important}
+.th-lfo {border-bottom:2px solid var(--c4d)!important}
+.th-dlay{border-bottom:2px solid var(--c0d)!important}
+.th-lfoh{border-bottom:2px solid var(--c4d)!important}
+
+/* cell colors */
+.cn{color:var(--t0);font-size:13px;font-weight:700}
+.cs{color:var(--c5);font-size:13px;font-weight:700}
+.co{font-size:13px;color:var(--t0)}
+.cm{color:var(--t2);font-size:11px} .cf{color:var(--c0)} .cc{color:var(--c1)}
+.cw{color:var(--c2)} .csa{color:var(--c3)} .cna{color:var(--t3)} .cl{color:var(--c4)} .cla{color:var(--t1)}
+.dv{color:var(--t0);font-size:13px;font-weight:700} .dd{color:var(--c0);font-size:13px;font-weight:700}
+.dt{color:var(--c6);font-size:13px;font-weight:700} .tms{color:var(--c0)} .tlf{color:var(--c4)}
+
+.bdg{display:inline-block;font-size:7px;font-weight:700;padding:0 3px;border-radius:2px;
+  margin-left:4px;vertical-align:middle;letter-spacing:.08em;text-transform:uppercase}
+.bl{background:rgba(144,128,255,.2);color:var(--c1)}
+.ba{background:rgba(43,58,96,.5);color:var(--t2)}
+.br{background:rgba(0,212,176,.2);color:var(--c0)}
+.bm{background:rgba(85,153,255,.2);color:var(--c5)}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--ln2)}
+
+/* ── TEMPO FILTER ── */
+.tempo-wrap{display:flex;flex-direction:column}
+.tempo-ctrl{display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--bg2);
+  border-bottom:1px solid var(--ln);flex-shrink:0;position:sticky;top:0;z-index:5}
+.ctrl-lbl{font-size:8px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--t2);margin-right:2px}
+.tog{background:none;border:1px solid var(--ln);border-radius:3px;color:var(--t2);cursor:pointer;
+  font-family:inherit;font-size:9px;font-weight:700;letter-spacing:.1em;padding:3px 9px;
+  text-transform:uppercase;transition:all .1s}
+.tog:hover{color:var(--t1);border-color:var(--ln2)}
+.tog.dot.on{border-color:var(--c0d);color:var(--c0);background:rgba(0,212,176,.08)}
+.tog.tri.on{border-color:rgba(255,136,51,.5);color:var(--c6);background:rgba(255,136,51,.08)}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="hd">
+  <div class="hd-inner">
+
+    <div class="logo">
+      <span class="logo-sym">𝄞</span>
+      <div><div class="logo-lbl">Music Ref</div><div class="logo-sub">reference chart</div></div>
+    </div>
+
+    <div class="iblk">
+      <span class="iblk-lbl">Song</span>
+      <input class="inp-song" id="song" type="text" placeholder="untitled">
+    </div>
+
+    <div class="iblk">
+      <span class="iblk-lbl">Tempo</span>
+      <div class="irow">
+        <input class="inp" id="bpm" type="number" value="128" min="1" max="999" step="0.01">
+        <span class="iunit">BPM</span>
+      </div>
+    </div>
+
+    <div class="iblk">
+      <span class="iblk-lbl">Sample Rate</span>
+      <div class="irow">
+        <input class="inp" id="sr" type="number" value="96000" min="1" step="1">
+        <span class="iunit">Hz</span>
+      </div>
+    </div>
+
+    <div class="iblk">
+      <span class="iblk-lbl">Tuning ref</span>
+      <div class="irow">
+        <input class="inp" id="a4" type="number" value="440" min="380" max="500" step="0.01">
+        <span class="iunit">A4 Hz</span>
+      </div>
+    </div>
+
+    <div class="iblk">
+      <span class="iblk-lbl">Key</span>
+      <div class="irow">
+        <select class="sel sel-key" id="keyroot">
+          <option value="">All</option>
+          <option value="0">C</option>
+          <option value="1">C# / Db</option>
+          <option value="2">D</option>
+          <option value="3">D# / Eb</option>
+          <option value="4">E</option>
+          <option value="5">F</option>
+          <option value="6">F# / Gb</option>
+          <option value="7">G</option>
+          <option value="8">G# / Ab</option>
+          <option value="9">A</option>
+          <option value="10">A# / Bb</option>
+          <option value="11">B</option>
+        </select>
+        <select class="sel sel-mode" id="keymode">
+          <option value="maj">Major</option>
+          <option value="min">Minor</option>
+          <option value="dor">Dorian</option>
+          <option value="phr">Phrygian</option>
+          <option value="lyd">Lydian</option>
+          <option value="mix">Mixolydian</option>
+          <option value="pmaj">Pent. Maj</option>
+          <option value="pmin">Pent. Min</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="hd-right">
+      <button class="pbtn" id="printBtn">⎙ PRINT SUMMARY</button>
+      <div class="tabs">
+        <button class="tbtn" data-tab="pitch">Pitch</button>
+        <button class="tbtn" data-tab="tempo">Tempo</button>
+        <button class="tbtn on" data-tab="both">Both</button>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- ═══ BODY ═══ -->
+<div id="body">
+
+  <!-- PITCH -->
+  <div class="pane" id="pane-pitch">
+    <table>
+      <thead><tr>
+        <th class="th-note"><span class="thm">Note</span></th>
+        <th class="th-midi"><span class="thm">MIDI</span></th>
+        <th class="th-freq"><span class="thm">Frequency</span><span class="ths">Hz</span></th>
+        <th class="th-cycl"><span class="thm">Cycle length</span><span class="ths">ms · 3 decimals</span></th>
+        <th class="th-wave"><span class="thm">Wavelength</span><span class="ths">m · 343.2 m/s air</span></th>
+        <th class="th-samp"><span class="thm">Samples</span><span class="ths" id="sr-p">no SR set</span></th>
+        <th class="th-lfo"><span class="thm">LFO / audio rate</span><span class="ths">Hz to match pitch</span></th>
+      </tr></thead>
+      <tbody id="pb"></tbody>
+    </table>
+  </div>
+
+  <!-- TEMPO -->
+  <div class="pane" id="pane-tempo">
+    <div class="tempo-wrap">
+      <div class="tempo-ctrl">
+        <span class="ctrl-lbl">Show</span>
+        <button class="tog dot on">Dotted</button>
+        <button class="tog tri on">Triplets</button>
+      </div>
+      <table>
+        <thead><tr>
+          <th class="th-div"><span class="thm">Division</span></th>
+          <th class="th-dlay"><span class="thm">Delay</span><span class="ths">milliseconds</span></th>
+          <th class="th-dlay"><span class="thm">Delay</span><span class="ths">seconds</span></th>
+          <th class="th-lfoh"><span class="thm">LFO rate</span><span class="ths">Hz</span></th>
+        </tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BOTH -->
+  <div id="pane-both" class="on">
+    <div class="cwrap cwrap-t">
+      <div class="tempo-ctrl">
+        <span class="ctrl-lbl">Show</span>
+        <button class="tog dot on">Dotted</button>
+        <button class="tog tri on">Triplets</button>
+      </div>
+      <table>
+        <thead><tr>
+          <th class="th-div"><span class="thm">Division</span></th>
+          <th class="th-dlay"><span class="thm">ms</span></th>
+          <th class="th-lfoh"><span class="thm">LFO Hz</span></th>
+        </tr></thead>
+        <tbody id="tbb"></tbody>
+      </table>
+    </div>
+    <div class="cwrap cwrap-p">
+      <table>
+        <thead><tr>
+          <th class="th-note"><span class="thm">Note</span></th>
+          <th class="th-midi"><span class="thm">MIDI</span></th>
+          <th class="th-freq"><span class="thm">Frequency (Hz)</span></th>
+          <th class="th-cycl"><span class="thm">Cycle (ms)</span></th>
+          <th class="th-wave"><span class="thm">Wavelength (m)</span></th>
+          <th class="th-samp"><span class="thm">Samples</span><span class="ths" id="sr-b">—</span></th>
+          <th class="th-lfo"><span class="thm">LFO / rate (Hz)</span></th>
+        </tr></thead>
+        <tbody id="pbb"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const SOS=343.2;
+
+const DIVS=[
+  {n:'1/1',  m:4,        t:0},{n:'1/1D', m:6,        t:1},{n:'1/1T', m:8/3,     t:2},
+  {n:'1/2',  m:2,        t:0},{n:'1/2D', m:3,        t:1},{n:'1/2T', m:4/3,     t:2},
+  {n:'1/4',  m:1,        t:0},{n:'1/4D', m:1.5,      t:1},{n:'1/4T', m:2/3,     t:2},
+  {n:'1/8',  m:0.5,      t:0},{n:'1/8D', m:0.75,     t:1},{n:'1/8T', m:1/3,     t:2},
+  {n:'1/16', m:0.25,     t:0},{n:'1/16D',m:0.375,    t:1},{n:'1/16T',m:1/6,     t:2},
+  {n:'1/32', m:0.125,    t:0},{n:'1/32D',m:0.1875,   t:1},{n:'1/32T',m:1/12,    t:2},
+  {n:'1/64', m:0.0625,   t:0},{n:'1/64D',m:0.09375,  t:1},{n:'1/64T',m:1/24,    t:2},
+];
+
+const SCALES={
+  maj: [0,2,4,5,7,9,11],
+  min: [0,2,3,5,7,8,10],
+  dor: [0,2,3,5,7,9,10],
+  phr: [0,1,3,5,7,8,10],
+  lyd: [0,2,4,6,7,9,11],
+  mix: [0,2,4,5,7,9,10],
+  pmaj:[0,2,4,7,9],
+  pmin:[0,3,5,7,10],
+};
+const SCALE_NAMES={
+  maj:'Major',min:'Natural Minor',dor:'Dorian',phr:'Phrygian',
+  lyd:'Lydian',mix:'Mixolydian',pmaj:'Pent. Major',pmin:'Pent. Minor'
+};
+
+// chord tones per mode: [root, 3rd, 5th, 7th] as semitone intervals (null = not in scale)
+const CHORD_TONES={
+  maj: [0,4,7,11], min: [0,3,7,10], dor: [0,3,7,10], phr: [0,3,7,10],
+  lyd: [0,4,7,11], mix: [0,4,7,10], pmaj:[0,4,7,null],pmin:[0,3,7,10],
+};
+const TONE_LABELS =['Root','Third','Fifth','Seventh'];
+const TONE_COLORS =['#00d4b0','#9080ff','#ffaa33','#ff5599'];
+const INAMES={0:'Unison',3:'Minor 3rd',4:'Major 3rd',7:'Perfect 5th',10:'Minor 7th',11:'Major 7th'};
+const KEY_NAMES=['C','C#/Db','D','D#/Eb','E','F','F#/Gb','G','G#/Ab','A','A#/Bb','B'];
+
+const f2=n=>n.toFixed(2);
+const f3=n=>n.toFixed(3);
+const f4=n=>n.toFixed(4);
+
+// ── getters ──
+function bpm(){return parseFloat(document.getElementById('bpm').value)||128}
+function sr(){const v=document.getElementById('sr').value;return v?parseFloat(v):null}
+function a4(){return parseFloat(document.getElementById('a4').value)||440}
+function songName(){return document.getElementById('song').value.trim()||'Untitled'}
+
+function getKeySet(){
+  const root=document.getElementById('keyroot').value;
+  if(root==='')return null;
+  const mode=document.getElementById('keymode').value;
+  const r=parseInt(root);
+  return new Set((SCALES[mode]||SCALES.maj).map(i=>(r+i)%12));
+}
+function keyLabel(){
+  const root=document.getElementById('keyroot').value;
+  if(root==='')return'';
+  return KEY_NAMES[parseInt(root)]+' '+(SCALE_NAMES[document.getElementById('keymode').value]||'');
+}
+
+// ── pitch table ──
+function pitchHTML(a4val,srVal,keySet){
+  let h='';
+  for(let m=0;m<=127;m++){
+    const ni=m%12, oct=Math.floor(m/12)-1;
+    if(keySet!==null&&!keySet.has(ni))continue;
+    const nn=NN[ni],sharp=nn.includes('#');
+    const isC=ni===0,isA4=m===69,isC4=m===60;
+    const fq=a4val*Math.pow(2,(m-69)/12);
+    const cy=1000/fq,wl=SOS/fq;
+    const sp=srVal?srVal/fq:null;
+    const sub=fq<20;
+    const octClass='oct'+((oct+1+40)%4);
+    const rc=isA4?'ra4':isC4?'rc4':isC?'rco':'';
+    const nc=sharp?'cs':'cn';
+    const a4b=isA4?'<span class="bdg br">A4</span>':'';
+    const c4b=isC4?'<span class="bdg bm">C4</span>':'';
+    const spC=sp!==null?`<td class="csa">${f3(sp)}</td>`:`<td class="cna">N/A</td>`;
+    const lc=sub?'cl':'cla';
+    const lb=sub?'<span class="bdg bl">LFO</span>':'<span class="bdg ba">OSC</span>';
+    h+=`<tr class="${octClass}${rc?' '+rc:''}">
+<td class="td-note"><span class="${nc}">${nn}</span> <span class="co">${oct}</span>${a4b}${c4b}</td>
+<td class="cm">${m}</td><td class="cf">${f3(fq)}</td><td class="cc">${f3(cy)}</td>
+<td class="cw">${f3(wl)}</td>${spC}
+<td class="${lc}">${sub?fq.toFixed(5):f3(fq)}${lb}</td></tr>`;
+  }
+  return h;
+}
+
+// ── tempo table ──
+let showDot=true, showTri=true;
+
+function tempoHTML(bpmVal,compact){
+  const beat=60000/bpmVal;
+  return DIVS.filter(d=>(d.t===1?showDot:d.t===2?showTri:true)).map(d=>{
+    const ms=d.m*beat,hz=1000/ms;
+    const tc=['dv','dd','dt'][d.t];
+    if(compact)return`<tr><td><span class="${tc}">${d.n}</span></td><td class="tms">${f2(ms)}</td><td class="tlf">${f4(hz)}</td></tr>`;
+    return`<tr><td><span class="${tc}">${d.n}</span></td><td class="tms">${f2(ms)}</td><td class="tms">${(ms/1000).toFixed(4)}</td><td class="tlf">${f4(hz)}</td></tr>`;
+  }).join('');
+}
+
+// ── SR label ──
+function updateSRLabel(srVal){
+  const s=srVal?`@ ${srVal.toLocaleString()} Hz`:'no SR set';
+  const s2=srVal?`@ ${srVal.toLocaleString()} Hz`:'—';
+  const a=document.getElementById('sr-p'),b=document.getElementById('sr-b');
+  if(a)a.textContent=s; if(b)b.textContent=s2;
+}
+
+// ── refresh ──
+function refresh(){
+  const tab=document.querySelector('.tbtn.on').dataset.tab;
+  const A4=a4(),SR=sr(),BPM=bpm(),KS=getKeySet();
+  updateSRLabel(SR);
+  if(tab==='pitch'){
+    document.getElementById('pb').innerHTML=pitchHTML(A4,SR,KS);
+  }else if(tab==='tempo'){
+    document.getElementById('tb').innerHTML=tempoHTML(BPM,false);
+  }else{
+    document.getElementById('pbb').innerHTML=pitchHTML(A4,SR,KS);
+    document.getElementById('tbb').innerHTML=tempoHTML(BPM,true);
+  }
+}
+
+// ── tab switching ──
+document.querySelectorAll('.tbtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.tbtn').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane,#pane-both').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    const t=b.dataset.tab;
+    document.getElementById(t==='both'?'pane-both':`pane-${t}`).classList.add('on');
+    refresh();
+  });
+});
+
+// ── dotted/triplet toggles ──
+function syncTogs(){
+  document.querySelectorAll('.tog.dot').forEach(b=>b.classList.toggle('on',showDot));
+  document.querySelectorAll('.tog.tri').forEach(b=>b.classList.toggle('on',showTri));
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.tog');
+  if(!b)return;
+  if(b.classList.contains('dot'))showDot=!showDot;
+  else if(b.classList.contains('tri'))showTri=!showTri;
+  syncTogs(); refresh();
+});
+
+// ── input listeners ──
+['bpm','sr','a4'].forEach(id=>document.getElementById(id).addEventListener('input',refresh));
+['keyroot','keymode'].forEach(id=>document.getElementById(id).addEventListener('change',refresh));
+document.getElementById('song').addEventListener('input',()=>{
+  const v=document.getElementById('song').value;
+  document.title=v?v+' — Music Ref':'Music Reference Chart';
+});
+
+// ── PRINT SUMMARY ──
+document.getElementById('printBtn').addEventListener('click',printSummary);
+
+function printSummary(){
+  const sn=songName(), BPM=bpm(), SR=sr(), A4=a4(), KS=getKeySet(), kl=keyLabel();
+  const beat=60000/BPM;
+
+  // tempo rows
+  const tRows=DIVS.filter(d=>(d.t===1?showDot:d.t===2?showTri:true)).map(d=>{
+    const ms=d.m*beat,hz=1000/ms;
+    const c=['#d6e4ff','#00d4b0','#ff8833'][d.t];
+    return`<tr><td style="color:${c};font-weight:700;width:60px">${d.n}</td>`+
+          `<td style="color:#00d4b0">${f2(ms)} ms</td>`+
+          `<td style="color:#5f78b0">${(ms/1000).toFixed(4)} s</td>`+
+          `<td style="color:#ff5599">${f4(hz)} Hz</td></tr>`;
+  }).join('');
+
+  // ── chord tone rows (root/3rd/5th/7th × octaves 1-5) ──
+  const rootSemi = document.getElementById('keyroot').value !== ''
+    ? parseInt(document.getElementById('keyroot').value) : null;
+  const curMode  = document.getElementById('keymode').value;
+
+  function chordOctRows(root, iv, A4val, SRval) {
+    let rows='';
+    for(let oct=1;oct<=5;oct++){
+      const m=(oct+1)*12+root+iv;
+      if(m<0||m>127)continue;
+      const ni=m%12, aOct=Math.floor(m/12)-1;
+      const nn2=NN[ni], sharp=nn2.includes('#');
+      const fq=A4val*Math.pow(2,(m-69)/12);
+      const cy=1000/fq, wl=SOS/fq, sp=SRval?f3(SRval/fq):'—';
+      const nc=sharp?'#5599ff':'#d6e4ff';
+      const bg=['rgba(0,212,176,.06)','rgba(144,128,255,.06)','rgba(255,170,51,.05)','rgba(255,85,153,.04)'][(aOct+40)%4];
+      const spTd=SRval?`<td style="color:#33ee88">${sp}</td>`:`<td style="color:#1c2640">—</td>`;
+      rows+=`<tr style="background:${bg}">
+<td style="color:${nc};font-weight:700;text-align:center;width:55px">${nn2} ${aOct}</td>
+<td style="color:#2b3a60">${m}</td><td style="color:#00d4b0">${f3(fq)}</td>
+<td style="color:#9080ff">${f3(cy)}</td><td style="color:#ffaa33">${f3(wl)}</td>${spTd}</tr>`;
+    }
+    return rows;
+  }
+
+  let pRows='';
+  if(rootSemi!==null){
+    const tones=CHORD_TONES[curMode]||[0,4,7,10];
+    tones.forEach((iv,i)=>{
+      if(iv===null)return;
+      const degNote=NN[(rootSemi+iv)%12];
+      const iname=INAMES[iv]||`+${iv} semitones`;
+      const color=TONE_COLORS[i];
+      pRows+=`<tr><td colspan="6" style="background:#0c1121;color:${color};font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:9px 10px 6px;border-top:2px solid #1c2640">${TONE_LABELS[i]} — ${degNote}  (${iname})</td></tr>`;
+      pRows+=chordOctRows(rootSemi,iv,A4,SR);
+    });
+  } else {
+    // no key: fall back to full range (C0–C8)
+    for(let m=12;m<=108;m++){
+      const ni=m%12, oct=Math.floor(m/12)-1;
+      const nn=NN[ni], sharp=nn.includes('#');
+      const fq=A4*Math.pow(2,(m-69)/12);
+      const cy=1000/fq, wl=SOS/fq, sp=SR?f3(SR/fq):'—';
+      const nc=sharp?'#5599ff':'#d6e4ff';
+      const bg=['rgba(0,212,176,.05)','rgba(144,128,255,.05)','rgba(255,170,51,.04)','rgba(255,85,153,.035)'][(oct+40)%4];
+      const spTd=SR?`<td style="color:#33ee88">${sp}</td>`:`<td style="color:#1c2640">—</td>`;
+      pRows+=`<tr style="background:${bg}"><td style="color:${nc};font-weight:700;text-align:center;width:55px">${nn} ${oct}</td><td style="color:#2b3a60">${m}</td><td style="color:#00d4b0">${f3(fq)}</td><td style="color:#9080ff">${f3(cy)}</td><td style="color:#ffaa33">${f3(wl)}</td>${spTd}</tr>`;
+    }
+  }
+
+  const meta=[
+    kl?`<b style="color:#d6e4ff">${kl}</b>`:'All keys',
+    `<b style="color:#d6e4ff">${BPM} BPM</b>`,
+    SR?`SR <b style="color:#d6e4ff">${SR.toLocaleString()} Hz</b>`:'No SR set',
+    `A4 = <b style="color:#d6e4ff">${A4.toFixed(2)} Hz</b>`,
+    !showDot?'<span style="opacity:.4">Dotted hidden</span>':'',
+    !showTri?'<span style="opacity:.4">Triplets hidden</span>':'',
+  ].filter(Boolean).join(' <span style="color:#1c2640">·</span> ');
+
+  const html=`<!DOCTYPE html><html><head>
+<meta charset="UTF-8"><title>${sn} — Music Reference</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#06090f;color:#5f78b0;font-family:'Cascadia Code','JetBrains Mono','Consolas',monospace;font-size:11px;padding:32px 36px}
+h1{font-size:30px;font-weight:700;color:#d6e4ff;letter-spacing:-.02em;margin-bottom:5px}
+.slug{font-size:11px;line-height:2;margin-bottom:26px}
+.layout{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start}
+h2{font-size:8px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#2b3a60;
+   padding-bottom:7px;border-bottom:1px solid #1c2640;margin-bottom:10px}
+table{border-collapse:collapse;width:100%}
+th{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+   color:#2b3a60;padding:5px 10px 4px;text-align:left;border-bottom:1px solid #111829}
+td{padding:3px 10px;border-bottom:1px solid rgba(20,30,55,.8);font-variant-numeric:tabular-nums;white-space:nowrap}
+.foot{margin-top:22px;font-size:9px;color:#1c2640;border-top:1px solid #0c1121;padding-top:12px;display:flex;justify-content:space-between}
+</style>
+</head><body>
+<h1>𝄞 ${sn}</h1>
+<div class="slug">${meta}</div>
+<div class="layout">
+  <div>
+    <h2>Tempo Divisions</h2>
+    <table><thead><tr><th>Division</th><th>ms</th><th>Seconds</th><th>LFO Hz</th></tr></thead>
+    <tbody>${tRows}</tbody></table>
+  </div>
+  <div>
+    <h2>${kl?'Chord Tones — '+kl:'All Pitch Notes (C0 – C8)'}</h2>
+    <table><thead><tr>
+      <th style="text-align:center">Note</th><th>MIDI</th>
+      <th>Freq (Hz)</th><th>Cycle (ms)</th><th>λ (m)</th><th>Samples</th>
+    </tr></thead>
+    <tbody>${pRows}</tbody></table>
+  </div>
+</div>
+<div class="foot">
+  <span>Generated ${new Date().toLocaleString()}</span>
+  <span>musicref · save as screenshot</span>
+</div>
+</body></html>`;
+
+  const w=window.open('','_blank','width=1120,height=820,scrollbars=yes');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ── init ──
+refresh();
+requestAnimationFrame(()=>{
+  setTimeout(()=>{
+    const r=document.querySelector('#pbb .ra4')||document.querySelector('#pb .ra4');
+    if(r)r.scrollIntoView({block:'center',behavior:'instant'});
+  },60);
+});
+</script>
+</body>
+</html>
