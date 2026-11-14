@@ -92,7 +92,8 @@ body{color:var(--fg);font-family:var(--font);font-size:17px;font-feature-setting
 .iunit{font-size:12px;font-weight:600;letter-spacing:.05em;color:#8a8a86}
 
 /* ── SIDE STRIP ── (left of the tables: Root/Dotted/Triplets, gap, PRINT, Pitch, Tempo, Dark) */
-.strip{display:flex;flex-direction:column;align-items:stretch;align-self:flex-start;gap:6px;padding:10px;background:var(--ctrl-bg);flex-shrink:0;margin-right:6px}
+.strip{display:flex;flex-direction:column;align-items:stretch;align-self:flex-start;gap:6px;padding:10px;background:var(--ctrl-bg);flex-shrink:0;margin-right:6px;
+  margin-top:50px} /* 60px header row − 10px padding: ROOT's top edge sits on the header underline */
 .strip-gap{height:22px}
 .pbtn,.tog,.vbtn,.mbtn{font-family:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:6px;cursor:pointer;text-align:center;text-transform:uppercase;letter-spacing:.08em;transition:background .1s,color .1s}
 .pbtn{background:var(--orange);color:#fff;border:1px solid var(--orange);letter-spacing:.08em}
