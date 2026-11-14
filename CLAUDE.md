@@ -27,6 +27,8 @@ the code map and the known gotchas.
    a max-width.
 6. **The summary is a canvas-drawn .jpg download**, not a popup. Its colours are a
    copy of the `:root` palette inside `printSummary()`; change both together.
+7. **Scales live in `SCALE_LIST` only.** The Key mode menu is built from it, so
+   don't add `<option>`s by hand. Chord tones are derived by `chordTones()`.
 
 ## Style
 

@@ -24,12 +24,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 body{color:var(--t0);font-family:'Cascadia Code','JetBrains Mono','SF Mono','Fira Code','Consolas',monospace;font-size:15px}
 
 /* ── HEADER ── */
-.hd{position:fixed;top:0;left:0;right:0;z-index:200;height:76px;background:var(--bg1);border-bottom:1px solid var(--ln2)}
+.hd{position:fixed;top:0;left:0;right:0;z-index:200;min-height:76px;background:var(--bg1);border-bottom:1px solid var(--ln2)}
 .hd::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,var(--c0) 0%,var(--c1) 40%,var(--c4) 75%,transparent 100%);opacity:.5}
-.hd-inner{width:80%;height:100%;margin:0 auto;padding:0;display:flex;align-items:center;gap:0}
+.hd-inner{width:80%;min-height:76px;margin:0 auto;padding:8px 0;display:flex;flex-wrap:wrap;align-items:center;row-gap:10px}
 
-.logo{display:flex;align-items:center;gap:8px;padding-right:18px;border-right:1px solid var(--ln);margin-right:0;height:100%;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:8px;padding-right:18px;border-right:1px solid var(--ln);margin-right:0;align-self:stretch;flex-shrink:0}
 .logo-sym{font-size:28px;color:var(--c0);line-height:1}
 .logo-lbl{font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--t0)}
 .logo-sub{font-size:10px;color:var(--t2);letter-spacing:.05em;margin-top:1px}
@@ -48,7 +48,7 @@ body{color:var(--t0);font-family:'Cascadia Code','JetBrains Mono','SF Mono','Fir
 
 .inp-song{background:var(--bg3);border:1px solid var(--ln);border-radius:3px;
   color:var(--t0);font-family:inherit;font-size:16px;font-weight:600;
-  padding:4px 10px;width:190px;text-align:left;outline:none;
+  padding:4px 10px;width:160px;text-align:left;outline:none;
   transition:border-color .15s;caret-color:var(--t0)}
 .inp-song:focus{border-color:var(--ln2);box-shadow:0 0 0 2px rgba(214,228,255,.05)}
 .inp-song::placeholder{color:var(--t3);font-weight:400;font-size:14px}
@@ -61,11 +61,11 @@ body{color:var(--t0);font-family:'Cascadia Code','JetBrains Mono','SF Mono','Fir
   background-repeat:no-repeat;background-position:right 6px center}
 .sel:focus{border-color:var(--c1d)}
 .sel-key{width:92px}
-.sel-mode{width:118px}
+.sel-mode{width:180px}
 
 .iunit{font-size:11px;color:var(--t1);font-weight:600;letter-spacing:.1em}
 
-.hd-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.hd-right{margin-left:auto;padding-left:15px;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .pbtn{background:rgba(255,85,153,.1);border:1px solid rgba(255,85,153,.3);border-radius:3px;
   color:var(--c4);cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;
   letter-spacing:.18em;padding:7px 14px;text-transform:uppercase;transition:all .15s}
@@ -213,16 +213,7 @@ tr.rco{border-top:1px solid var(--ln2)!important}
           <option value="10">A# / Bb</option>
           <option value="11">B</option>
         </select>
-        <select class="sel sel-mode" id="keymode">
-          <option value="maj">Major</option>
-          <option value="min">Minor</option>
-          <option value="dor">Dorian</option>
-          <option value="phr">Phrygian</option>
-          <option value="lyd">Lydian</option>
-          <option value="mix">Mixolydian</option>
-          <option value="pmaj">Pent. Maj</option>
-          <option value="pmin">Pent. Min</option>
-        </select>
+        <select class="sel sel-mode" id="keymode"></select><!-- options built from SCALE_LIST -->
       </div>
     </div>
 
@@ -322,29 +313,67 @@ const DIVS=[
   {n:'1/64', m:0.0625,   t:0},{n:'1/64D',m:0.09375,  t:1},{n:'1/64T',m:1/24,    t:2},
 ];
 
-const SCALES={
-  maj: [0,2,4,5,7,9,11],
-  min: [0,2,3,5,7,8,10],
-  dor: [0,2,3,5,7,9,10],
-  phr: [0,1,3,5,7,8,10],
-  lyd: [0,2,4,6,7,9,11],
-  mix: [0,2,4,5,7,9,10],
-  pmaj:[0,2,4,7,9],
-  pmin:[0,3,5,7,10],
-};
-const SCALE_NAMES={
-  maj:'Major',min:'Natural Minor',dor:'Dorian',phr:'Phrygian',
-  lyd:'Lydian',mix:'Mixolydian',pmaj:'Pent. Major',pmin:'Pent. Minor'
-};
+// Scales/modes, in the order shown in the Key menu: [id, name, semitone offsets from root].
+// Same list and interval sets as Ableton Live's scale menu.
+const SCALE_LIST=[
+  ['maj', 'Major',              [0,2,4,5,7,9,11]],
+  ['min', 'Minor',              [0,2,3,5,7,8,10]],
+  ['dor', 'Dorian',             [0,2,3,5,7,9,10]],
+  ['mix', 'Mixolydian',         [0,2,4,5,7,9,10]],
+  ['lyd', 'Lydian',             [0,2,4,6,7,9,11]],
+  ['phr', 'Phrygian',           [0,1,3,5,7,8,10]],
+  ['loc', 'Locrian',            [0,1,3,5,6,8,10]],
+  ['wt',  'Whole Tone',         [0,2,4,6,8,10]],
+  ['hwd', 'Half-whole Dim.',    [0,1,3,4,6,7,9,10]],
+  ['whd', 'Whole-half Dim.',    [0,2,3,5,6,8,9,11]],
+  ['mblu','Minor Blues',        [0,3,5,6,7,10]],
+  ['pmin','Minor Pentatonic',   [0,3,5,7,10]],
+  ['pmaj','Major Pentatonic',   [0,2,4,7,9]],
+  ['hmin','Harmonic Minor',     [0,2,3,5,7,8,11]],
+  ['hmaj','Harmonic Major',     [0,2,4,5,7,8,11]],
+  ['dor4','Dorian #4',          [0,2,3,6,7,9,10]],
+  ['phd', 'Phrygian Dominant',  [0,1,4,5,7,8,10]],
+  ['mmin','Melodic Minor',      [0,2,3,5,7,9,11]],
+  ['lyda','Lydian Augmented',   [0,2,4,6,8,9,11]],
+  ['lydd','Lydian Dominant',    [0,2,4,6,7,9,10]],
+  ['sloc','Super Locrian',      [0,1,3,4,6,8,10]],
+  ['sp8', '8-Tone Spanish',     [0,1,3,4,5,6,8,10]],
+  ['bhai','Bhairav',            [0,1,4,5,7,8,11]],
+  ['hun', 'Hungarian Minor',    [0,2,3,6,7,8,11]],
+  ['hira','Hirajoshi',          [0,2,3,7,8]],
+  ['insn','In-Sen',             [0,1,5,7,10]],
+  ['iwa', 'Iwato',              [0,1,5,6,10]],
+  ['kum', 'Kumoi',              [0,2,3,7,9]],
+  ['pels','Pelog Selisir',      [0,1,3,7,8]],
+  ['pelt','Pelog Tembung',      [0,1,5,7,8]],
+  ['ms3', 'Messiaen 3',         [0,2,3,4,6,7,8,10,11]],
+  ['ms4', 'Messiaen 4',         [0,1,2,5,6,7,8,11]],
+  ['ms5', 'Messiaen 5',         [0,1,5,6,7,11]],
+  ['ms6', 'Messiaen 6',         [0,2,4,5,6,8,10,11]],
+  ['ms7', 'Messiaen 7',         [0,1,2,3,5,6,7,8,9,11]],
+];
+const SCALES={}, SCALE_NAMES={};
+SCALE_LIST.forEach(([id,name,iv])=>{SCALES[id]=iv;SCALE_NAMES[id]=name;});
 
-// chord tones per mode: [root, 3rd, 5th, 7th] as semitone intervals (null = not in scale)
-const CHORD_TONES={
-  maj: [0,4,7,11], min: [0,3,7,10], dor: [0,3,7,10], phr: [0,3,7,10],
-  lyd: [0,4,7,11], mix: [0,4,7,10], pmaj:[0,4,7,null],pmin:[0,3,7,10],
-};
+// Chord tones [root, 3rd, 5th, 7th] as semitones (null = not in scale). Used by the summary.
+// 7-note scales: stack thirds (scale degrees 1-3-5-7).
+// Others: pick from the scale — 3rd: M3 over m3; 5th: P5, else #5 over a major 3rd,
+// else b5, else #5; 7th: dim7 over a b5, else m7, else M7.
+function chordTones(mode){
+  const sc=SCALES[mode]||SCALES.maj;
+  if(sc.length===7)return[sc[0],sc[2],sc[4],sc[6]];
+  const has=i=>sc.includes(i);
+  const third=has(4)?4:has(3)?3:null;
+  const fifth=has(7)?7:(third===4&&has(8))?8:has(6)?6:has(8)?8:null;
+  const sev=(fifth===6&&has(9))?9:has(10)?10:has(11)?11:null;
+  return[0,third,fifth,sev];
+}
 const TONE_LABELS =['Root','Third','Fifth','Seventh'];
 const TONE_COLORS =['#00d4b0','#9080ff','#ffaa33','#ff5599'];
-const INAMES={0:'Unison',3:'Minor 3rd',4:'Major 3rd',7:'Perfect 5th',10:'Minor 7th',11:'Major 7th'};
+const INAMES={0:'Unison',3:'Minor 3rd',4:'Major 3rd',6:'Diminished 5th',7:'Perfect 5th',8:'Augmented 5th',9:'Diminished 7th',10:'Minor 7th',11:'Major 7th'};
+
+// build the Key mode menu
+document.getElementById('keymode').innerHTML=SCALE_LIST.map(([id,name])=>`<option value="${id}">${name}</option>`).join('');
 const KEY_NAMES=['C','C#/Db','D','D#/Eb','E','F','F#/Gb','G','G#/Ab','A','A#/Bb','B'];
 
 const f2=n=>n.toFixed(2);
@@ -496,7 +525,7 @@ function printSummary(){
   const rootVal=document.getElementById('keyroot').value;
   if(rootVal!==''){
     const root=parseInt(rootVal);
-    const tones=CHORD_TONES[document.getElementById('keymode').value]||[0,4,7,10];
+    const tones=chordTones(document.getElementById('keymode').value);
     tones.forEach((iv,i)=>{
       if(iv===null)return;
       pRows.push({section:`${TONE_LABELS[i]} — ${NN[(root+iv)%12]}  (${INAMES[iv]||'+'+iv+' semitones'})`,color:TONE_COLORS[i]});
@@ -585,6 +614,10 @@ function printSummary(){
 }
 
 // ── init ──
+// The header wraps to two rows on narrower windows; keep the tables just below it.
+const hdEl=document.querySelector('.hd'),bodyEl=document.getElementById('body');
+const fitBody=()=>{bodyEl.style.top=hdEl.offsetHeight+'px'};
+fitBody(); new ResizeObserver(fitBody).observe(hdEl);
 refresh();
 requestAnimationFrame(()=>{
   setTimeout(()=>{

@@ -17,7 +17,7 @@ Inspired by the iOS app **Tempo** (by Frozen Ape).
 | **Dependencies** | None. No frameworks, no CDN, no fonts fetched. Pure HTML/CSS/JS |
 | **Runs offline** | Yes — open the file directly in any browser (`file://` works) |
 | **Browser target** | Modern desktop Chrome/Edge/Firefox. Not optimised for mobile |
-| **Lines** | ~600 |
+| **Lines** | ~630 |
 | **Author** | Magnus (Type 2 Studio) |
 
 **Design intent:** a dark, dense, monospace "instrument panel" aesthetic — information
@@ -45,11 +45,12 @@ For the hosted version, see §9.
 | Sample Rate | `#sr` | `96000` | Hz. Blank → Samples column shows `N/A` |
 | Tuning ref | `#a4` | `440` | A4 in Hz. Drives all pitch calculations |
 | Key root | `#keyroot` | `""` (All) | `""` or semitone `0`–`11` |
-| Key mode | `#keymode` | `maj` | See scale list below |
+| Key mode | `#keymode` | `maj` | 35 scales/modes, built from `SCALE_LIST` (§4) |
 | PRINT SUMMARY | `#printBtn` | — | Downloads the summary as a .jpg (§5) |
 | View tabs | `.tbtn` | `both` | `pitch` / `tempo` / `both` |
 
-Header bar spans full width. Its inner content (`.hd-inner`) and the table area
+Header bar spans full width and wraps onto a second row on windows narrower than
+about 1900 px; a `ResizeObserver` keeps `#body` sitting right under it. Its inner content (`.hd-inner`) and the table area
 (`#body`) both fill **80% of the window width, with a 10% gutter each side**. There
 is no max-width cap. Font sizes and paddings were scaled up ~25% so the page reads
 comfortably at 100% browser zoom. Tables are `width:100%`, so they run right up to
@@ -115,28 +116,44 @@ lfoHz       = 1000 / divisionMs
 Each entry is `{n: name, m: multiplier, t: type}` where `t` is `0` straight,
 `1` dotted, `2` triplet. The `t` value drives both the filter and the row colour.
 
-### Scales (`SCALES`, semitone offsets from root)
+### Scales (`SCALE_LIST`, semitone offsets from root)
+
+35 scales and modes, in the same order and with the same interval sets as Ableton
+Live's scale menu. `SCALE_LIST` is the single source: the Key mode `<select>` is
+built from it at load, and `SCALES` / `SCALE_NAMES` lookups are derived from it.
+To add a scale, add one row there.
 
 ```
-maj  [0,2,4,5,7,9,11]   Major
-min  [0,2,3,5,7,8,10]   Natural Minor
-dor  [0,2,3,5,7,9,10]   Dorian
-phr  [0,1,3,5,7,8,10]   Phrygian
-lyd  [0,2,4,6,7,9,11]   Lydian
-mix  [0,2,4,5,7,9,10]   Mixolydian
-pmaj [0,2,4,7,9]        Pentatonic Major
-pmin [0,3,5,7,10]       Pentatonic Minor
+maj  Major              [0,2,4,5,7,9,11]      dor4 Dorian #4          [0,2,3,6,7,9,10]
+min  Minor              [0,2,3,5,7,8,10]      phd  Phrygian Dominant  [0,1,4,5,7,8,10]
+dor  Dorian             [0,2,3,5,7,9,10]      mmin Melodic Minor      [0,2,3,5,7,9,11]
+mix  Mixolydian         [0,2,4,5,7,9,10]      lyda Lydian Augmented   [0,2,4,6,8,9,11]
+lyd  Lydian             [0,2,4,6,7,9,11]      lydd Lydian Dominant    [0,2,4,6,7,9,10]
+phr  Phrygian           [0,1,3,5,7,8,10]      sloc Super Locrian      [0,1,3,4,6,8,10]
+loc  Locrian            [0,1,3,5,6,8,10]      sp8  8-Tone Spanish     [0,1,3,4,5,6,8,10]
+wt   Whole Tone         [0,2,4,6,8,10]        bhai Bhairav            [0,1,4,5,7,8,11]
+hwd  Half-whole Dim.    [0,1,3,4,6,7,9,10]    hun  Hungarian Minor    [0,2,3,6,7,8,11]
+whd  Whole-half Dim.    [0,2,3,5,6,8,9,11]    hira Hirajoshi          [0,2,3,7,8]
+mblu Minor Blues        [0,3,5,6,7,10]        insn In-Sen             [0,1,5,7,10]
+pmin Minor Pentatonic   [0,3,5,7,10]          iwa  Iwato              [0,1,5,6,10]
+pmaj Major Pentatonic   [0,2,4,7,9]           kum  Kumoi              [0,2,3,7,9]
+hmin Harmonic Minor     [0,2,3,5,7,8,11]      pels Pelog Selisir      [0,1,3,7,8]
+hmaj Harmonic Major     [0,2,4,5,7,8,11]      pelt Pelog Tembung      [0,1,5,7,8]
+ms3  Messiaen 3  [0,2,3,4,6,7,8,10,11]        ms4  Messiaen 4  [0,1,2,5,6,7,8,11]
+ms5  Messiaen 5  [0,1,5,6,7,11]               ms6  Messiaen 6  [0,2,4,5,6,8,10,11]
+ms7  Messiaen 7  [0,1,2,3,5,6,7,8,9,11]
 ```
 
-### Chord tones (`CHORD_TONES`, `[root, 3rd, 5th, 7th]`)
+### Chord tones (`chordTones(mode)`, `[root, 3rd, 5th, 7th]`)
 
-Used only by the print summary. `null` = that degree doesn't exist in the scale
-(Pentatonic Major has no 7th).
+Used only by the summary image. Computed from the scale, not hand-listed:
 
-```
-maj  [0,4,7,11]    min  [0,3,7,10]    dor  [0,3,7,10]    phr  [0,3,7,10]
-lyd  [0,4,7,11]    mix  [0,4,7,10]    pmaj [0,4,7,null]  pmin [0,3,7,10]
-```
+- **7-note scales** — stack thirds: scale degrees 1, 3, 5, 7.
+- **Everything else** — pick from the notes the scale has: 3rd = major 3rd if present,
+  else minor 3rd; 5th = perfect 5th, else #5 (when the 3rd is major), else b5, else #5;
+  7th = dim 7th when the 5th is b5, else minor 7th, else major 7th.
+- `null` = no such tone in the scale; that section is left out of the summary
+  (e.g. In-Sen and Iwato have no 3rd, Major Pentatonic has no 7th).
 
 ---
 
@@ -228,6 +245,7 @@ Single file, three blocks: `<style>`, markup, `<script>`.
 |---|---|
 | `bpm()` `sr()` `a4()` `songName()` | Read + sanitise header inputs. `sr()` returns `null` when blank |
 | `getKeySet()` | Returns a `Set` of pitch classes 0–11, or `null` for "All" |
+| `chordTones(mode)` | `[root, 3rd, 5th, 7th]` semitones for the summary (§4) |
 | `keyLabel()` | Human string, e.g. `"D# / Eb Dorian"`. Empty string if no key |
 | `pitchHTML(a4, sr, keySet)` | Builds all pitch rows |
 | `tempoHTML(bpm, compact)` | Builds tempo rows. `compact` drops the seconds column (Both view) |
@@ -317,7 +335,6 @@ ignore flag before the first sync.
 
 - Enharmonic display — show flats (Bb, Eb) rather than sharps when the key calls
   for it. Currently sharp-only throughout.
-- More scales — harmonic minor, melodic minor, locrian, blues.
 - Selectable octave range for the summary image (currently hardcoded 1–5 for chord
   tones, C0–C8 for the no-key list).
 - Save/load song presets to `localStorage`.
