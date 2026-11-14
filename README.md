@@ -54,12 +54,17 @@ For the hosted version, see §9.
 | Dark / Light | `#themeBtn` | light | Switches the body theme; saved in `localStorage` key `mrc-theme` |
 | View tabs | `.tbtn` | `both` | `pitch` / `tempo` / `both` |
 
-Header bar spans full width and wraps onto a second row on windows narrower than
-about 1900 px; a `ResizeObserver` keeps `#body` sitting right under it. Its inner content (`.hd-inner`) and the table area
+Header layout: row 1 (`.hd-row`) is the logo and inputs; row 2 (`.hd-right`) is the
+buttons, right-aligned so the **Both** button's right edge lines up with the scale menu
+above it (`.hd-inner` is a one-column grid sized to row 1). Below 1720 px window width
+the inputs no longer fit on one line, so a media query switches back to one flowing,
+wrapping row with the buttons beside the Key block. A `ResizeObserver` keeps `#body`
+sitting right under the header. Its inner content (`.hd-inner`) and the table area
 (`#body`) both fill **80% of the window width, with a 10% gutter each side**. There
 is no max-width cap. Font sizes and paddings were scaled up ~25% so the page reads
 comfortably at 100% browser zoom. In the Both and Pitch views the tables are
-`width:auto` and hug their content (the pitch table is about as compact as the tempo
+`width:auto`, hug their content and are **centred as a group** in the window (the tempo
+and pitch tables keep their side-by-side spacing) (the pitch table is about as compact as the tempo
 table, with right-aligned numbers); the full Tempo view's table is `width:100%`.
 
 Top left is the Miu logo (inline SVG, `fill="currentColor"`, light grey) with
