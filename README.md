@@ -45,7 +45,7 @@ For the hosted version, see §9.
 | Field | ID | Default | Notes |
 |---|---|---|---|
 | Song name | `#song` | *(empty → "Untitled")* | Text. Also updates `document.title` live |
-| Tempo | `#bpm` | `128` | BPM. Drives all tempo divisions |
+| Tempo | `#bpm` | `128` | BPM. Drives all tempo divisions. DAW-style: click-hold-drag up/down changes it live (1 BPM per 4 px, Shift = 0.1 steps, clamped 20–999); a plain click lets you type |
 | Sample Rate | `#srsel` + `#sr` | `96000` | Menu of common rates 11025 – 384000 Hz. The last option, **Custom…**, reveals the `#sr` number field for any value. Blank/0 custom → Samples column shows `N/A` |
 | Tuning ref | `#a4` | `440` | A4 in Hz. Drives all pitch calculations |
 | Key root | `#keyroot` | `""` (All) | `""` or semitone `0`–`11` |

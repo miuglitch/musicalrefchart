@@ -76,7 +76,9 @@ body{color:var(--fg);font-family:var(--font);font-size:17px;font-feature-setting
 .inp-song{font-size:24px;font-weight:300;padding:4px 6px;width:200px}
 .inp:hover,.inp-song:hover{border-color:#2e2e2e}
 .inp::placeholder,.inp-song::placeholder{color:#5c5b58;font-weight:300}
-#bpm{color:var(--orange)}
+#bpm{color:var(--orange);cursor:ns-resize;touch-action:none}
+#bpm:focus{cursor:text}
+body.dragging,body.dragging *{cursor:ns-resize!important;user-select:none}
 .sel{font-size:17px;font-weight:600;padding:9px 30px 9px 12px;cursor:pointer;-webkit-appearance:none;appearance:none;
   background-color:#1d1d1d;border-color:#1d1d1d;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8a86'/%3E%3C/svg%3E");
@@ -535,6 +537,41 @@ document.addEventListener('click',e=>{
 
 // ── input listeners ──
 ['bpm','sr','a4'].forEach(id=>document.getElementById(id).addEventListener('input',refresh));
+// ── Tempo: DAW-style drag ──
+// Click-hold-drag up/down on the BPM field: 1 BPM per 4 px, hold Shift for 0.1 steps.
+// A plain click (no drag) puts the cursor in the field for typing as usual.
+(()=>{
+  const el=document.getElementById('bpm'), PX=4, MIN=20, MAX=999, THRESH=3;
+  let y0=0, v0=0, acc=0, lastY=0, dragging=false, down=false;
+  el.addEventListener('pointerdown',e=>{
+    if(e.button!==0||document.activeElement===el)return;   // already typing: normal text behaviour
+    e.preventDefault();
+    down=true; dragging=false; y0=lastY=e.clientY; v0=bpm(); acc=0;
+    el.setPointerCapture(e.pointerId);
+  });
+  el.addEventListener('pointermove',e=>{
+    if(!down)return;
+    if(!dragging&&Math.abs(e.clientY-y0)<THRESH)return;
+    if(!dragging){dragging=true;document.body.classList.add('dragging');}
+    const step=e.shiftKey?0.1:1;
+    acc+=(lastY-e.clientY)/PX*step; lastY=e.clientY;          // up = faster
+    let v=Math.min(MAX,Math.max(MIN,v0+acc));
+    v=e.shiftKey?Math.round(v*10)/10:Math.round(v);
+    if(v===MIN||v===MAX)acc=v-v0;                           // don't build up past the limits
+    const s=String(+v.toFixed(2));
+    if(el.value!==s){el.value=s;refresh();}
+  });
+  const end=e=>{
+    if(!down)return; down=false;
+    try{el.releasePointerCapture(e.pointerId)}catch(_){}
+    document.body.classList.remove('dragging');
+    if(!dragging){el.focus();el.select();}                  // plain click: type a value
+    dragging=false;
+  };
+  el.addEventListener('pointerup',end);
+  el.addEventListener('pointercancel',end);
+})();
+
 // Sample rate: preset menu; "Custom…" reveals a number field for any value.
 document.getElementById('srsel').addEventListener('change',e=>{
   const inp=document.getElementById('sr'),custom=e.target.value==='custom';
