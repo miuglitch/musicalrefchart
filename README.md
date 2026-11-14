@@ -17,7 +17,7 @@ Inspired by the iOS app **Tempo** (by Frozen Ape).
 | **Dependencies** | None. No frameworks, no CDN, no fonts fetched. Pure HTML/CSS/JS |
 | **Runs offline** | Yes — open the file directly in any browser (`file://` works) |
 | **Browser target** | Modern desktop Chrome/Edge/Firefox. Not optimised for mobile |
-| **Lines** | ~640 |
+| **Lines** | ~600 |
 | **Author** | Magnus (Type 2 Studio) |
 
 **Design intent:** a dark, dense, monospace "instrument panel" aesthetic — information
