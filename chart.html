@@ -118,7 +118,9 @@ html[data-theme="dark"] .pbtn:hover{background:#ff7a45;color:#0d0d0d}
 table{border-collapse:collapse;width:100%}
 /* tempo + pitch tables in the Both view, and the Pitch view, hug their content */
 .cwrap table,.pane table{width:auto}
-thead th{position:sticky;top:0;z-index:10;background:var(--th-bg);padding:13px 18px 11px;text-align:left;white-space:nowrap;user-select:none;border-bottom:3px solid var(--th-line)}
+/* fixed header height (fits the two-line Samples label) so tempo and pitch header rows,
+   their coloured underlines and the first data rows all line up */
+thead th{position:sticky;top:0;z-index:10;background:var(--th-bg);padding:13px 18px 11px;height:60px;vertical-align:middle;text-align:left;white-space:nowrap;user-select:none;border-bottom:3px solid var(--th-line)}
 .thm{display:block;font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--th-fg)}
 .ths{display:block;font-size:12px;margin-top:3px;font-weight:400;color:var(--th-sub)}
 tbody td{padding:6px 18px;white-space:nowrap;font-size:18px;border-bottom:1px solid var(--row-line);color:var(--fg)}
