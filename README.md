@@ -14,15 +14,19 @@ Inspired by the iOS app **Tempo** (by Frozen Ape).
 |---|---|
 | **Type** | Static web app — one HTML file, no build step |
 | **Entry point** | `chart.html` |
-| **Dependencies** | None. No frameworks, no CDN, no fonts fetched. Pure HTML/CSS/JS |
+| **Dependencies** | None. No frameworks, no CDN, nothing fetched. The Inter Display font is embedded in the file (§6) |
 | **Runs offline** | Yes — open the file directly in any browser (`file://` works) |
 | **Browser target** | Modern desktop Chrome/Edge/Firefox. Not optimised for mobile |
-| **Lines** | ~630 |
+| **Lines** | ~690 (plus ~175 KB of embedded font data) |
 | **Author** | Magnus (Type 2 Studio) |
 
-**Design intent:** a dark, dense, monospace "instrument panel" aesthetic — information
-tool, not a website. Tight rows, tabular numbers, colour-coded columns. It should feel
-like a piece of studio gear, not a web page.
+**Design intent:** Teenage Engineering-style hardware look, after the K.O. II: a
+black display strip header with big white readouts over a light warm-grey body,
+dark grey frames, signal orange / red / blue / dark cyan accents. Large, readable
+Inter Display at several weights. Clean contrast, no glow. A **dark mode** keeps the
+same header and turns the body into a black display (§6). It should feel like a
+piece of studio gear, not a web page. (Chosen Nov 2026 from five mockups; this was
+"design 1".)
 
 ---
 
@@ -42,20 +46,24 @@ For the hosted version, see §9.
 |---|---|---|---|
 | Song name | `#song` | *(empty → "Untitled")* | Text. Also updates `document.title` live |
 | Tempo | `#bpm` | `128` | BPM. Drives all tempo divisions |
-| Sample Rate | `#sr` | `96000` | Hz. Blank → Samples column shows `N/A` |
+| Sample Rate | `#srsel` + `#sr` | `96000` | Menu of common rates 11025 – 384000 Hz. The last option, **Custom…**, reveals the `#sr` number field for any value. Blank/0 custom → Samples column shows `N/A` |
 | Tuning ref | `#a4` | `440` | A4 in Hz. Drives all pitch calculations |
 | Key root | `#keyroot` | `""` (All) | `""` or semitone `0`–`11` |
 | Key mode | `#keymode` | `maj` | 35 scales/modes, built from `SCALE_LIST` (§4) |
 | PRINT SUMMARY | `#printBtn` | — | Downloads the summary as a .jpg (§5) |
+| Dark / Light | `#themeBtn` | light | Switches the body theme; saved in `localStorage` key `mrc-theme` |
 | View tabs | `.tbtn` | `both` | `pitch` / `tempo` / `both` |
 
 Header bar spans full width and wraps onto a second row on windows narrower than
 about 1900 px; a `ResizeObserver` keeps `#body` sitting right under it. Its inner content (`.hd-inner`) and the table area
 (`#body`) both fill **80% of the window width, with a 10% gutter each side**. There
 is no max-width cap. Font sizes and paddings were scaled up ~25% so the page reads
-comfortably at 100% browser zoom. Tables are `width:100%`, so they run right up to
-the scrollbar with no empty strip (the Both view's narrow tempo column is the one
-exception, `.cwrap-t table{width:auto}`).
+comfortably at 100% browser zoom. In the Both and Pitch views the tables are
+`width:auto` and hug their content (the pitch table is about as compact as the tempo
+table, with right-aligned numbers); the full Tempo view's table is `width:100%`.
+
+Top left is the Miu logo (inline SVG, `fill="currentColor"`, light grey) with
+**REFERENCE CHART** under it in orange.
 
 ### Pitch table
 
@@ -71,7 +79,7 @@ All 128 MIDI notes (C-1 to G9), filtered to the selected key if one is set.
 
 The MIDI-number and LFO/OSC columns were removed (Nov 2026).
 
-Row highlights: A4 (teal) and C4 (blue) get badges and a brighter background.
+Row highlights: A4 (orange) and C4 (blue) get badges and a tinted background.
 
 ### Tempo table
 
@@ -81,7 +89,7 @@ the straight, dotted and triplet rows independently. All three start on.
 
 | Column | Value |
 |---|---|
-| Division | e.g. `1/8D`. Colour-coded: white = straight, teal = dotted, orange = triplet |
+| Division | e.g. `1/8D`. Colour-coded: black (white in dark mode) = straight, cyan = dotted, orange = triplet |
 | Length (ms) | 2 decimals. Headed `Length ms` in the Both view |
 | Length (s) | 4 decimals *(full Tempo tab only)* |
 | LFO rate | Hz, 4 decimals — the rate that completes one cycle per division |
@@ -166,7 +174,7 @@ temporary `<a download>` link, so it works offline and from `file://`.
 
 Layout:
 
-- **Title** — song name, with 𝄞 glyph
+- **Title** — song name
 - **Meta line** — key, BPM, sample rate, A4 tuning, plus notes if root/dotted/
   triplet rows are hidden
 - **Left column** — tempo divisions (Length ms / seconds / LFO Hz), respecting the
@@ -179,44 +187,51 @@ Layout:
 - **Footer** — generation timestamp
 
 Canvas can't read the page stylesheet, so colours live in a small `C` palette object
-inside `printSummary()` that mirrors the `:root` variables. Canvas height is computed
+inside `printSummary()` that mirrors the **light-theme** `:root` tokens (the image is
+always light, whatever the page theme). It draws in the embedded Inter Display; the
+click handler waits on `document.fonts.load()` first so the canvas doesn't fall back. Canvas height is computed
 from the row count, so the no-key image is tall (~2600 px logical).
 
 ---
 
 ## 6. Colour system
 
-Defined as CSS custom properties on `:root`.
+Palette taken from a Teenage Engineering K.O. II. CSS custom properties on `:root`:
 
 ```
---bg  #06090f   page          --t0  #d6e4ff   primary text
---bg1 #0c1121   header        --t1  #5f78b0   secondary
---bg2 #111829   table head    --t2  #2b3a60   muted
---bg3 #18203a   inputs        --t3  #14203a   near-invisible
---ln  #1c2640   border        --ln2 #273555   border bright
+--orange #ff5a1f   signal orange: accent, BPM readout, A4, triplets, wavelength, delay ms
+--red    #e0322b   samples
+--blue   #3a86d4   frequency, LFO Hz, C4, sharps
+--cyan   #0f8a94   dark cyan: cycle length, dotted
+--frame  #3b3b3b   dark grey frames (header underline, Both-view divider)
+--disp   #0f0f0f   black display (header)
 ```
 
-Column accent colours — each has a `d` (dark) variant used for header underlines:
+The **header** is fixed black-display styling in both themes. Everything below it
+reads semantic tokens (`--bg`, `--th-bg`, `--band-a/-b`, `--v-freq`, `--k-freq`, …).
+`html[data-theme="dark"]` redefines those tokens for dark mode. Text colours (`--v-*`)
+are darker shades of the accents on light grey and brighter shades on black, so they
+stay readable. A tiny script in `<head>` applies the saved theme before first paint.
 
-```
---c0 #00d4b0  teal      frequency / delay ms
---c1 #9080ff  lavender  cycle length
---c2 #ffaa33  amber     wavelength
---c3 #33ee88  green     samples
---c4 #ff5599  pink      LFO Hz (tempo)
---c5 #5599ff  blue      sharp note names
---c6 #ff8833  orange    triplet divisions
-```
+Column header text is near-black (light) / white (dark); each column's colour lives
+in its `border-bottom` accent (`--k-*`).
+
+**Font:** Inter Display (SIL OFL), subset to Latin and embedded as base64 woff2 in
+`<style id="fonts">` at the top of the file: weights 300, 400, 500, 600, 700, 800,
+about 175 KB. It's registered under the private family name `IDM` so a locally
+installed Inter can't interfere. Numbers use `font-feature-settings:'tnum'` so
+columns line up. To re-make the subset: `pyftsubset InterDisplay-<W>.otf
+--unicodes="U+0020-007E,U+00A0-00FF,U+2013,U+2014,U+2018,U+2019,U+201C,U+201D,U+2022,U+2026,U+2190-2193,U+2212,U+00B7,U+266D,U+266F"
+--layout-features='tnum,kern,liga,calt,case,zero,ss01,cv11' --flavor=woff2`, then base64 it.
 
 ### Octave banding
 
-Pitch rows cycle through a 4-colour tint so octaves are visually separable:
+Pitch rows alternate between two greys by octave (`--band-a` / `--band-b`) and each C
+row gets a heavier top rule:
 
 ```css
-tr.oct0 td { background: rgba(0,212,176,.15) }   /* teal     */
-tr.oct1 td { background: rgba(144,128,255,.15) } /* lavender */
-tr.oct2 td { background: rgba(255,170,51,.12) }  /* amber    */
-tr.oct3 td { background: rgba(255,85,153,.11) }  /* pink     */
+tr.oct0 td,tr.oct2 td { background: var(--band-a) }
+tr.oct1 td,tr.oct3 td { background: var(--band-b) }
 ```
 
 Class assigned in `pitchHTML()` as `'oct' + ((oct + 1 + 40) % 4)`.
@@ -228,11 +243,6 @@ The `+ 40` keeps the modulo positive for negative octaves.
 > cells in most browsers — it renders as nothing. This was a real bug; don't
 > "simplify" it back to `tr { background }`.
 
-Column header labels (`.thm`) are deliberately **all near-white** (`#dce8ff`).
-Earlier versions coloured each header to match its column; that was changed —
-the colour differentiation now lives only in the `border-bottom` accents.
-Subtitles (`.ths`) are `rgba(220,232,255,.45)`.
-
 ---
 
 ## 7. Code map
@@ -243,7 +253,7 @@ Single file, three blocks: `<style>`, markup, `<script>`.
 
 | Function | Purpose |
 |---|---|
-| `bpm()` `sr()` `a4()` `songName()` | Read + sanitise header inputs. `sr()` returns `null` when blank |
+| `bpm()` `sr()` `a4()` `songName()` | Read + sanitise header inputs. `sr()` reads the `#srsel` menu, or `#sr` when it's on Custom…; `null` when blank |
 | `getKeySet()` | Returns a `Set` of pitch classes 0–11, or `null` for "All" |
 | `chordTones(mode)` | `[root, 3rd, 5th, 7th]` semitones for the summary (§4) |
 | `keyLabel()` | Human string, e.g. `"D# / Eb Dorian"`. Empty string if no key |
@@ -266,6 +276,8 @@ Everything else is read live from the DOM inputs on each `refresh()`.
 - `.tog` → **delegated** listener on `document` (the toggle buttons are duplicated
   in two views, so delegation keeps both working)
 - `#bpm #sr #a4` → `input` → `refresh()`
+- `#srsel` → `change` → shows/hides the custom `#sr` field, then `refresh()`
+- `#themeBtn` → toggles `data-theme="dark"` on `<html>` and saves it to `localStorage`
 - `#keyroot #keymode` → `change` → `refresh()`
 - `#song` → `input` → updates `document.title` only (doesn't trigger redraw)
 
@@ -287,7 +299,7 @@ source of "I fixed it but it's still broken in the other tab" confusion.
 - Styles are minified-ish and grouped by section with `/* ── NAME ── */` banners.
 - JS uses short helpers `f2` `f3` `f4` for `toFixed`. Every displayed number goes
   through one of them — never print a raw float.
-- Font stack is a monospace cascade of system fonts; nothing is downloaded.
+- Font is the embedded Inter Display (§6); nothing is downloaded. Fallbacks: Inter, system-ui, Segoe UI.
 
 ---
 
@@ -357,4 +369,4 @@ Things worth saying up front so the assistant doesn't get them wrong:
    a bundler, or a CDN.
 2. **Mirror duplicated markup** — two Root/Dotted/Triplets toggle rows, two tbody pairs (§7).
 3. **Octave banding goes on `td`, never `tr`** (§6).
-4. Keep the dense dark instrument-panel aesthetic.
+4. Keep the K.O. II hardware look: black display header, grey body, orange/red/blue/cyan accents, Inter Display, no glow (§6).
