@@ -58,17 +58,9 @@ body{color:var(--fg);font-family:var(--font);font-size:17px;font-feature-setting
 
 /* ── HEADER ── (black display strip, same in both themes) */
 .hd{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--disp);color:#f4f4f2;border-bottom:6px solid var(--frame)}
-.hd-inner{width:80%;margin:0 auto;padding:16px 0;display:grid;grid-template-columns:minmax(0,max-content);justify-content:center;row-gap:14px}
-/* row 1: logo + inputs (wraps on narrow windows); row 2: buttons, right edge lined up with the scale menu */
-.hd-row{display:flex;flex-wrap:wrap;align-items:center;row-gap:14px}
+.hd-inner{width:80%;margin:0 auto;padding:16px 0;display:flex;justify-content:center}
+.hd-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;row-gap:14px}
 .hd-row>.iblk:last-child{padding-right:0;border-right:0}
-/* Below ~1720px the inputs no longer fit on one line: fall back to one flowing row so the
-   buttons sit beside the Key block instead of on a third line. 1720 ≈ row-1 width / 0.8. */
-@media (max-width:1719px){
-  .hd-inner{display:flex;flex-wrap:wrap;align-items:center;justify-content:center}
-  .hd-row{display:contents}
-  .hd-right{padding-left:16px}
-}
 
 .logo{display:flex;flex-direction:column;justify-content:center;gap:7px;padding-right:26px;border-right:1px solid #2e2e2e;flex-shrink:0;align-self:stretch}
 .logo svg{display:block;height:30px;width:auto;color:#c9c7c2}
@@ -99,22 +91,22 @@ body{color:var(--fg);font-family:var(--font);font-size:17px;font-feature-setting
 #sr[hidden]{display:none}
 .iunit{font-size:12px;font-weight:600;letter-spacing:.05em;color:#8a8a86}
 
-.hd-right{justify-self:end;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:12px}
-.pbtn,.tbtn,.tog,.mbtn{font-family:inherit;cursor:pointer;border-radius:6px;transition:background .1s,color .1s}
-.pbtn{font-size:14px;font-weight:600;padding:11px 18px;letter-spacing:.02em;background:var(--orange);color:#fff;border:0}
+/* ── SIDE STRIP ── (left of the tables: Root/Dotted/Triplets, gap, PRINT, Pitch, Tempo, Dark) */
+.strip{display:flex;flex-direction:column;align-items:stretch;align-self:flex-start;gap:6px;padding:10px;background:var(--ctrl-bg);flex-shrink:0;margin-right:6px}
+.strip-gap{height:22px}
+.pbtn,.tog,.vbtn,.mbtn{font-family:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:6px;cursor:pointer;text-align:left;transition:background .1s,color .1s}
+.pbtn{background:var(--orange);color:#fff;border:1px solid var(--orange);letter-spacing:.08em}
 .pbtn:hover{background:#ff7240}
-.tabs{display:flex;gap:6px}
-.tbtn,.mbtn{font-size:14px;font-weight:600;padding:11px 18px;letter-spacing:.02em;background:#2a2a2a;color:#d6d6d3;border:0}
-.tbtn:hover,.mbtn:hover{background:var(--frame)}
-.tbtn.on{background:#eceae6;color:#111}
-.mbtn{min-width:72px}
+.mbtn{background:#2a2a2a;color:#d6d6d3;border:1px solid #2a2a2a}
+.mbtn:hover{background:var(--frame)}
 
 /* ── BODY ── */
-#body{position:fixed;top:90px;bottom:0;left:10%;right:10%;overflow:hidden;display:flex}
-.pane{display:none;width:100%;height:100%;overflow:auto}
-.pane.on{display:flex}
-#pane-both{display:none;width:100%;height:100%;overflow:hidden}
-#pane-both.on{display:flex;justify-content:center} /* tables centred as a group */
+/* strip + tables are centred as one group */
+#body{position:fixed;top:90px;bottom:0;left:10%;right:10%;overflow:hidden;display:flex;justify-content:center}
+.pane{display:none;height:100%;overflow:auto;flex:0 1 auto;min-width:0}
+.pane.on{display:block}
+#pane-both{display:none;height:100%;overflow:hidden;flex:0 1 auto;min-width:0}
+#pane-both.on{display:flex}
 .cwrap{height:100%;overflow-y:auto;overflow-x:auto}
 .cwrap-t{flex-shrink:0;border-right:6px solid var(--frame)}
 .cwrap-p{flex:0 1 auto;min-width:0}
@@ -122,8 +114,7 @@ body{color:var(--fg);font-family:var(--font);font-size:17px;font-feature-setting
 /* ── TABLE BASE ── */
 table{border-collapse:collapse;width:100%}
 /* tempo + pitch tables in the Both view, and the Pitch view, hug their content */
-.cwrap table,#pane-pitch table{width:auto}
-#pane-pitch table{margin:0 auto}
+.cwrap table,.pane table{width:auto}
 thead th{position:sticky;top:0;z-index:10;background:var(--th-bg);padding:13px 18px 11px;text-align:left;white-space:nowrap;user-select:none;border-bottom:3px solid var(--th-line)}
 .thm{display:block;font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--th-fg)}
 .ths{display:block;font-size:12px;margin-top:3px;font-weight:400;color:var(--th-sub)}
@@ -166,16 +157,12 @@ tr.rco td{border-top:2px solid var(--oct-line)}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:5px}
 
-/* ── TEMPO FILTER ── */
-.tempo-wrap{display:flex;align-items:flex-start;width:100%}
-/* Root / Dotted / Triplets: a vertical strip to the left of the tempo table */
-.tempo-ctrl{display:flex;flex-direction:column;align-items:stretch;align-self:flex-start;gap:6px;padding:10px;background:var(--ctrl-bg);flex-shrink:0;position:sticky;top:0;z-index:5;margin-right:6px}
-.tempo-ctrl .tog{text-align:left}
-.tog{font-size:13px;font-weight:600;padding:7px 13px;border:1px solid var(--tog-bd);background:var(--tog-bg);color:var(--tog-fg)}
-html:not([data-theme="dark"]) .tog.on{background:#151515;color:#fff;border-color:#151515}
+/* ── TOGGLES ── (.tog = Root/Dotted/Triplets, .vbtn = Pitch/Tempo view toggles) */
+.tog,.vbtn{border:1px solid var(--tog-bd);background:var(--tog-bg);color:var(--tog-fg)}
+html:not([data-theme="dark"]) .tog.on,html:not([data-theme="dark"]) .vbtn.on{background:#151515;color:#fff;border-color:#151515}
 html:not([data-theme="dark"]) .tog.dot.on{background:var(--cyan);border-color:var(--cyan)}
 html:not([data-theme="dark"]) .tog.tri.on{background:var(--orange);border-color:var(--orange)}
-html[data-theme="dark"] .tog.on{color:#fff;border-color:#8c8c88}
+html[data-theme="dark"] .tog.on,html[data-theme="dark"] .vbtn.on{color:#fff;border-color:#8c8c88}
 html[data-theme="dark"] .tog.dot.on{color:#20b9c4;border-color:#20b9c4}
 html[data-theme="dark"] .tog.tri.on{color:#ff7a45;border-color:#ff7a45}
 </style>
@@ -264,21 +251,23 @@ try{if(localStorage.getItem('mrc-theme')==='dark')document.documentElement.datas
 
   </div><!-- /hd-row -->
 
-    <div class="hd-right">
-      <button class="pbtn" id="printBtn" title="Save the summary as a .jpg image">Print summary</button>
-      <button class="mbtn" id="themeBtn" title="Switch light / dark">Dark</button>
-      <div class="tabs">
-        <button class="tbtn" data-tab="pitch">Pitch</button>
-        <button class="tbtn" data-tab="tempo">Tempo</button>
-        <button class="tbtn on" data-tab="both">Both</button>
-      </div>
-    </div>
-
   </div>
 </header>
 
 <!-- ═══ BODY ═══ -->
 <div id="body">
+
+  <!-- SIDE STRIP: one copy, shared by all views -->
+  <div class="strip">
+    <button class="tog root on">Root</button>
+    <button class="tog dot on">Dotted</button>
+    <button class="tog tri on">Triplets</button>
+    <div class="strip-gap"></div>
+    <button class="pbtn" id="printBtn" title="Save the summary as a .jpg image">PRINT</button>
+    <button class="vbtn on" data-view="pitch" title="Show / hide the pitch table">Pitch</button>
+    <button class="vbtn on" data-view="tempo" title="Show / hide the tempo table">Tempo</button>
+    <button class="mbtn" id="themeBtn" title="Switch light / dark">Dark</button>
+  </div>
 
   <!-- PITCH -->
   <div class="pane" id="pane-pitch">
@@ -297,11 +286,6 @@ try{if(localStorage.getItem('mrc-theme')==='dark')document.documentElement.datas
   <!-- TEMPO -->
   <div class="pane" id="pane-tempo">
     <div class="tempo-wrap">
-      <div class="tempo-ctrl">
-        <button class="tog root on">Root</button>
-        <button class="tog dot on">Dotted</button>
-        <button class="tog tri on">Triplets</button>
-      </div>
       <table>
         <thead><tr>
           <th class="th-div"><span class="thm">Division</span></th>
@@ -316,11 +300,6 @@ try{if(localStorage.getItem('mrc-theme')==='dark')document.documentElement.datas
 
   <!-- BOTH -->
   <div id="pane-both" class="on">
-    <div class="tempo-ctrl">
-      <button class="tog root on">Root</button>
-      <button class="tog dot on">Dotted</button>
-      <button class="tog tri on">Triplets</button>
-    </div>
     <div class="cwrap cwrap-t">
       <table>
         <thead><tr>
@@ -500,7 +479,7 @@ function updateSRLabel(srVal){
 
 // ── refresh ──
 function refresh(){
-  const tab=document.querySelector('.tbtn.on').dataset.tab;
+  const tab=currentTab();
   const A4=a4(),SR=sr(),BPM=bpm(),KS=getKeySet();
   updateSRLabel(SR);
   if(tab==='pitch'){
@@ -513,23 +492,31 @@ function refresh(){
   }
 }
 
-// ── tab switching ──
-document.querySelectorAll('.tbtn').forEach(b=>{
+// ── view toggles ──
+// Pitch and Tempo are independent show/hide toggles; both on = the side-by-side view
+// (the default). At least one always stays on.
+let showPitch=true, showTempo=true;
+const currentTab=()=>showPitch&&showTempo?'both':showPitch?'pitch':'tempo';
+function applyView(){
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.toggle('on',b.dataset.view==='pitch'?showPitch:showTempo));
+  document.querySelectorAll('.pane,#pane-both').forEach(x=>x.classList.remove('on'));
+  const t=currentTab();
+  document.getElementById(t==='both'?'pane-both':`pane-${t}`).classList.add('on');
+  refresh();
+}
+document.querySelectorAll('.vbtn').forEach(b=>{
   b.addEventListener('click',()=>{
-    document.querySelectorAll('.tbtn').forEach(x=>x.classList.remove('on'));
-    document.querySelectorAll('.pane,#pane-both').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');
-    const t=b.dataset.tab;
-    document.getElementById(t==='both'?'pane-both':`pane-${t}`).classList.add('on');
-    refresh();
+    if(b.dataset.view==='pitch'){if(showPitch&&!showTempo)return;showPitch=!showPitch;}
+    else{if(showTempo&&!showPitch)return;showTempo=!showTempo;}
+    applyView();
   });
 });
 
 // ── root/dotted/triplet toggles ──
 function syncTogs(){
-  document.querySelectorAll('.tog.root').forEach(b=>b.classList.toggle('on',showRoot));
-  document.querySelectorAll('.tog.dot').forEach(b=>b.classList.toggle('on',showDot));
-  document.querySelectorAll('.tog.tri').forEach(b=>b.classList.toggle('on',showTri));
+  document.querySelector('.tog.root').classList.toggle('on',showRoot);
+  document.querySelector('.tog.dot').classList.toggle('on',showDot);
+  document.querySelector('.tog.tri').classList.toggle('on',showTri);
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('.tog');

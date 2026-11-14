@@ -50,23 +50,28 @@ For the hosted version, see §9.
 | Tuning ref | `#a4` | `440` | A4 in Hz. Drives all pitch calculations |
 | Key root | `#keyroot` | `""` (All) | `""` or semitone `0`–`11` |
 | Key mode | `#keymode` | `maj` | 35 scales/modes, built from `SCALE_LIST` (§4) |
-| PRINT SUMMARY | `#printBtn` | — | Downloads the summary as a .jpg (§5) |
-| Dark / Light | `#themeBtn` | light | Switches the body theme; saved in `localStorage` key `mrc-theme` |
-| View tabs | `.tbtn` | `both` | `pitch` / `tempo` / `both` |
 
-Header layout: row 1 (`.hd-row`) is the logo and inputs; row 2 (`.hd-right`) is the
-buttons, right-aligned so the **Both** button's right edge lines up with the scale menu
-above it (`.hd-inner` is a one-column grid sized to row 1, centred in the window). Below 1720 px window width
-the inputs no longer fit on one line, so a media query switches back to one flowing,
-wrapping, centred row with the buttons beside the Key block. A `ResizeObserver` keeps `#body`
-sitting right under the header. Its inner content (`.hd-inner`) and the table area
+### Side strip (left of the tables)
+
+One vertical strip, shared by all views, top to bottom:
+
+| Button | ID / class | Default | Notes |
+|---|---|---|---|
+| Root / Dotted / Triplets | `.tog.root` `.tog.dot` `.tog.tri` | on | Show/hide straight, dotted, triplet rows (§3 Tempo table) |
+| *(gap)* | `.strip-gap` | | |
+| PRINT | `#printBtn` | — | Downloads the summary as a .jpg (§5) |
+| Pitch / Tempo | `.vbtn[data-view]` | both on | Independent show/hide for the two tables. Both on = side-by-side view. The last one on can't be turned off |
+| Dark / Light | `#themeBtn` | light | Switches the body theme; saved in `localStorage` key `mrc-theme` |
+
+### Layout
+
+The header is one centred, wrapping row (`.hd-row`): logo and inputs. A
+`ResizeObserver` keeps `#body` sitting right under it. Its inner content (`.hd-inner`) and the table area
 (`#body`) both fill **80% of the window width, with a 10% gutter each side**. There
 is no max-width cap. Font sizes and paddings were scaled up ~25% so the page reads
-comfortably at 100% browser zoom. In the Both and Pitch views the tables are
-`width:auto`, hug their content and are **centred as a group** (toggle strip + tempo +
-pitch) in the window (the tempo
-and pitch tables keep their side-by-side spacing) (the pitch table is about as compact as the tempo
-table, with right-aligned numbers); the full Tempo view's table is `width:100%`.
+comfortably at 100% browser zoom. The side strip and the visible tables are
+**centred as a group** (`#body{justify-content:center}`); tables are `width:auto` and
+hug their content, and the pitch table's numbers are right-aligned.
 
 Top left is the Miu logo (inline SVG, `fill="currentColor"`, light grey) with
 **REFERENCE CHART** under it in orange.
@@ -102,10 +107,12 @@ the straight, dotted and triplet rows independently. All three start on.
 
 ### Views
 
-- **Pitch** — pitch table only, full width
-- **Tempo** — tempo table only, with the seconds column
-- **Both** *(default)* — tempo in a narrow fixed left column, pitch filling the rest.
-  On load, auto-scrolls the pitch column to A4.
+Set by the Pitch / Tempo toggles in the side strip (`currentTab()`):
+
+- **Pitch + Tempo on** *(default)* — `#pane-both`: compact tempo table and pitch table
+  side by side. On load, auto-scrolls the pitch column to A4.
+- **Pitch only** — `#pane-pitch`
+- **Tempo only** — `#pane-tempo`, with the extra seconds column
 
 ---
 
@@ -173,7 +180,7 @@ Used only by the summary image. Computed from the scale, not hand-listed:
 
 ## 5. Print summary (.jpg)
 
-Clicking **PRINT SUMMARY** draws the summary onto an off-screen `<canvas>` (at 2×
+Clicking **PRINT** draws the summary onto an off-screen `<canvas>` (at 2×
 for sharpness) and downloads it as a JPEG named `<song name> - summary.jpg`. No
 popup window, no library: it's plain Canvas 2D + `canvas.toBlob('image/jpeg')` and a
 temporary `<a download>` link, so it works offline and from `file://`.
@@ -267,20 +274,20 @@ Single file, three blocks: `<style>`, markup, `<script>`.
 | `tempoHTML(bpm, compact)` | Builds tempo rows. `compact` drops the seconds column (Both view) |
 | `updateSRLabel(sr)` | Updates the "@ 96,000 Hz" subtitle in the Samples header |
 | `refresh()` | Master redraw — reads inputs, repaints only the active tab |
-| `syncTogs()` | Keeps the duplicated Root/Dotted/Triplets buttons in sync across views |
+| `syncTogs()` | Updates the Root/Dotted/Triplets buttons' `.on` state |
+| `currentTab()` / `applyView()` | Which pane to show from the Pitch/Tempo toggles; shows it and redraws |
 | `divOn(d)` | `true` if a DIVS entry's type is currently shown (shared by tables and summary) |
 | `printSummary()` | Draws the summary on a canvas and downloads it as .jpg |
 
 ### State
 
-Module-scope globals: `showRoot`, `showDot`, `showTri` (booleans, all `true`).
+Module-scope globals: `showRoot`, `showDot`, `showTri`, `showPitch`, `showTempo` (booleans, all `true`).
 Everything else is read live from the DOM inputs on each `refresh()`.
 
 ### Event wiring
 
-- `.tbtn` click → swap `.on` class on button + pane, then `refresh()`
-- `.tog` → **delegated** listener on `document` (the toggle buttons are duplicated
-  in two views, so delegation keeps both working)
+- `.vbtn` click → flips `showPitch`/`showTempo` (never both off), then `applyView()`
+- `.tog` → delegated listener on `document` → flips `showRoot`/`showDot`/`showTri`
 - `#bpm #sr #a4` → `input` → `refresh()`
 - `#srsel` → `change` → shows/hides the custom `#sr` field, then `refresh()`
 - `#themeBtn` → toggles `data-theme="dark"` on `<html>` and saves it to `localStorage`
@@ -289,8 +296,7 @@ Everything else is read live from the DOM inputs on each `refresh()`.
 
 ### Duplicated markup — important
 
-The Root/Dotted/Triplets toggle row exists **twice** (once in the Tempo pane, once in the
-Both pane's left column), and the tempo and pitch tables each have **two tbodies**
+The tempo and pitch tables each have **two tbodies**
 (`#tb`/`#tbb`, `#pb`/`#pbb`). Any change to one must be mirrored. This is the main
 source of "I fixed it but it's still broken in the other tab" confusion.
 
@@ -373,6 +379,6 @@ Things worth saying up front so the assistant doesn't get them wrong:
 
 1. **One file, no build, no dependencies, must work offline.** Don't suggest React,
    a bundler, or a CDN.
-2. **Mirror duplicated markup** — two Root/Dotted/Triplets toggle rows, two tbody pairs (§7).
+2. **Mirror duplicated markup** — two tbody pairs (§7). The side strip exists once.
 3. **Octave banding goes on `td`, never `tr`** (§6).
 4. Keep the K.O. II hardware look: black display header, grey body, orange/red/blue/cyan accents, Inter Display, no glow (§6).

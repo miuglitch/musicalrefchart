@@ -17,11 +17,11 @@ the code map and the known gotchas.
 1. **Octave banding must target `td`, not `tr`.** With `border-collapse: collapse`
    a `<tr>` background doesn't paint through cells. It will silently render as
    nothing.
-2. **Markup is duplicated across views.** The Root/Dotted/Triplets toggle row
-   exists twice, and both tables have two tbodies (`#tb`/`#tbb`, `#pb`/`#pbb`). Change
-   one, change the other.
+2. **Table markup is duplicated across views.** Both tables have two tbodies
+   (`#tb`/`#tbb`, `#pb`/`#pbb`). Change one, change the other. The side strip (Root,
+   Dotted, Triplets, PRINT, Pitch, Tempo, Dark) exists once and serves every view.
 3. **Every displayed number goes through `f2`/`f3`/`f4`.** Never print a raw float.
-4. The Both view is the default tab, not Pitch.
+4. Pitch and Tempo are independent toggles; both on (the side-by-side view) is the default.
 5. **Layout is 80% of the window width** (10% gutter each side) for both the header
    and `#body`. Don't reintroduce a max-width. In the Both and Pitch views the tables
    are `width:auto` (compact on purpose).
