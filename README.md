@@ -20,7 +20,7 @@ Inspired by the iOS app **Tempo** (by Frozen Ape).
 | **Dependencies** | None. No frameworks, no CDN, nothing fetched. The font is embedded in the file (§6) |
 | **Runs offline** | Yes. Open the file straight from disk (`file://` works) |
 | **Browser target** | Modern desktop Chrome / Edge / Firefox, plus phones through a separate mobile layout at 700 px wide or less (§3 Mobile layout) |
-| **Size** | ~740 lines, ~206 KB (about 175 KB of that is the embedded font) |
+| **Size** | ~850 lines, ~213 KB (about 175 KB of that is the embedded font) |
 | **Author** | Magnus (Type 2 Studio) |
 
 **Design:** Teenage Engineering K.O. II hardware look. A black display header with
