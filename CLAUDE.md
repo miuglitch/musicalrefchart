@@ -47,6 +47,10 @@ colours, the code map and the gotchas.
    `<option>`s by hand. Chord tones come from `chordTones()`.
 9. **The font is embedded** (`<style id="fonts">`, Inter Display as `IDM`). Don't
    swap it for a link.
+10. **Phones get a separate layout** at 700 px wide or less: one `@media` block plus
+   `placeControls()` (README §3 Mobile layout). Desktop must stay unchanged. On phones
+   the strip buttons are *moved* into the bottom bar `.mbar`, so never assume they're
+   inside `.strip`. Check UI changes at 390 px wide as well as on desktop.
 
 ## Style
 

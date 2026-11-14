@@ -19,7 +19,7 @@ Inspired by the iOS app **Tempo** (by Frozen Ape).
 | **Entry point** | `chart.html` |
 | **Dependencies** | None. No frameworks, no CDN, nothing fetched. The font is embedded in the file (§6) |
 | **Runs offline** | Yes. Open the file straight from disk (`file://` works) |
-| **Browser target** | Modern desktop Chrome / Edge / Firefox. Not optimised for mobile |
+| **Browser target** | Modern desktop Chrome / Edge / Firefox, plus phones through a separate mobile layout at 700 px wide or less (§3 Mobile layout) |
 | **Size** | ~740 lines, ~206 KB (about 175 KB of that is the embedded font) |
 | **Author** | Magnus (Type 2 Studio) |
 
@@ -110,6 +110,28 @@ badge and a tinted row; each C row has a heavier top rule.
   side. On load the pitch column scrolls to A4.
 - **Pitch only**: `#pane-pitch`
 - **Tempo only**: `#pane-tempo`, with the extra seconds column
+
+### Mobile layout (window 700 px wide or less)
+
+A separate layout for phones: one `@media (max-width:700px)` block plus a little JS.
+Above 700 px nothing changes, and desktop renders exactly as before. Chosen Nov 2026
+from four mockups (this was "mobile 1"; all four are in the local `mockups/` folder).
+
+- **Compact header:** a 6-column CSS grid. Logo and song on row 1; Tempo, Sample rate
+  and A4 as three readouts on row 2 (the units move into the labels through `.m-only` /
+  `.d-only` spans); Key and scale on row 3. The header blocks have ids `#blk-song`
+  `#blk-tempo` `#blk-sr` `#blk-a4` `#blk-key` for this. The tempo drag works with a thumb.
+- **PITCH / TEMPO tabs:** `.mtabs` under the header (hidden on desktop). One table at a
+  time: Pitch uses `#pane-pitch`, Tempo uses `#pane-tempo` (with seconds). Pitch opens
+  first, scrolled to A4, and re-centres on A4 (or C4) after a key change.
+- **Bottom bar:** `.mbar`, fixed to the bottom. `placeControls()` moves the strip's
+  ROOT / DOTTED / TRIPLETS / PRINT / DARK buttons into it at phone width and back into
+  the strip above 700 px. They're the same elements, so their listeners keep working.
+  The strip's PITCH / TEMPO toggles are hidden on phones (the tabs replace them), and the
+  row toggles are dimmed on the Pitch tab because they only affect Tempo.
+- **Pitch table:** the Note column is sticky; Wavelength and Samples scroll sideways.
+- Crossing 700 px (rotating a tablet, resizing) is live. Going back to desktop restores
+  the previous PITCH / TEMPO state.
 
 ---
 
@@ -271,6 +293,9 @@ markup, main `<script>`.
 | `currentTab()` / `applyView()` | Picks the pane from the PITCH/TEMPO toggles, shows it, redraws |
 | `syncTogs()` | Sets the ROOT/DOTTED/TRIPLETS `.on` state |
 | `printSummary()` | Draws the summary canvas and downloads the .jpg |
+| `placeControls()` | Phone ⇄ desktop switch (`mq` = `matchMedia('(max-width:700px)')`): moves the buttons between `.strip` and `.mbar` |
+| `setMobileView(v)` | Phones only: shows the `'pitch'` or `'tempo'` tab |
+| `fitBody()` | Keeps `#body` between the header and, on phones, the bottom bar |
 
 ### State
 
@@ -289,6 +314,7 @@ start). Everything else is read from the inputs on each `refresh()`. The theme l
 - `.vbtn` → flips `showPitch`/`showTempo` (never both off) → `applyView()`
 - `#themeBtn` → toggles the theme and saves it
 - `#printBtn` → waits for the font → `printSummary()`
+- `.mtab` → `setMobileView()`; crossing 700 px (`mq` change) → `placeControls()`
 
 ### Duplicated markup
 
@@ -322,7 +348,7 @@ once.
   the local folder and reads them back to confirm the copy is right.
 - **Local folder:** `D:\Dropbox\Claude\Musical Reference Chart` on Magnus's PC (Dropbox
   gives backup and version history). It holds `chart.html`, `README.md`, `CLAUDE.md`,
-  plus local-only `mockups/` (the five Nov 2026 design options) and `Claude outputs/`
+  plus local-only `mockups/` (the five Nov 2026 design options and the four mobile ones) and `Claude outputs/`
   (old drafts, git-ignored). There's an old `.git` folder in it that isn't connected
   to GitHub; ignore it.
 
